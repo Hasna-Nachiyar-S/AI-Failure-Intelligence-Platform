@@ -22,12 +22,10 @@ class Preprocessor:
 
         for col in df.columns:
 
-            # Check whether the column is numeric
             if pd.api.types.is_numeric_dtype(df[col]):
 
                 df[col] = df[col].fillna(df[col].median())
 
-            # Everything else is treated as text
             else:
 
                 df[col] = df[col].fillna("Unknown")
@@ -54,13 +52,12 @@ class Preprocessor:
 
         df = df.copy()
 
-        numeric_columns = df.select_dtypes(include="number").columns
+        # Don't scale the target column
+        feature_columns = [col for col in df.columns if col != "Failure_Type"]
 
-        if len(numeric_columns) > 0:
-
-            df[numeric_columns] = self.scaler.fit_transform(
-                df[numeric_columns]
-            )
+        df[feature_columns] = self.scaler.fit_transform(
+            df[feature_columns]
+        )
 
         return df
 
