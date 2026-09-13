@@ -1,39 +1,66 @@
+============================================================
 AI FAILURE INTELLIGENCE PLATFORM
 PROJECT PROGRESS / CONTINUATION DOCUMENT
+============================================================
+
+PROJECT TITLE
+AI Failure Intelligence Platform
+
+PROJECT TYPE
+AI-based Failure Analysis, Prediction and Preventive
+Decision Support System
 
 ============================================================
 
-1. # PROJECT TITLE
+1. # PROJECT OBJECTIVE
 
-AI Failure Intelligence Platform
+The objective of the project is to build an AI-powered platform
+that analyzes historical failures across multiple domains,
+predicts possible failure outcomes, provides recommendations,
+generates counterfactual prevention scenarios, and allows
+interactive What-If simulation.
 
-Project Type:
-AI-based Failure Analysis, Prediction and Preventive Decision Support System
-
-# ============================================================ 2. PROJECT OBJECTIVE
-
-The objective of the project is to build an AI-powered platform that
-analyzes historical failures across multiple domains, predicts possible
-failure outcomes, identifies similar historical cases, provides
-recommendations, and determines what changes could reduce or prevent
-failure risk.
-
-The system is designed as a:
+The system is designed as:
 
 "Failure Intelligence and Preventive Decision Support Platform"
 
 rather than only a failure prediction model.
 
-# ============================================================ 3. SUPPORTED DOMAINS
+============================================================ 2. SUPPORTED DOMAINS
+============================================================
 
-The platform currently works with four domains:
+The platform supports four domains:
 
 1. Student
 2. Software
 3. Jobs
 4. Projects
 
-# ============================================================ 4. OVERALL SYSTEM ARCHITECTURE
+============================================================ 3. FINAL SYSTEM CONCEPT
+============================================================
+
+The platform moves from:
+
+"Predict whether failure will happen"
+
+towards:
+
+"Understand the predicted outcome, provide recommendations,
+explore possible interventions, and test how changes in
+inputs affect the model prediction."
+
+Important technical wording:
+
+Counterfactual and What-If results are model-based scenario
+analyses. They should NOT be described as proof of causation.
+
+Correct wording:
+
+"According to the trained ML model, changing a selected
+feature changes the predicted outcome."
+
+============================================================ 4. CURRENT SYSTEM ARCHITECTURE
+============================================================
 
 Historical Failure Data
 ↓
@@ -43,158 +70,230 @@ Data Standardization
 ↓
 Data Preprocessing
 ↓
-Classification + Clustering
+Domain-Specific ML Models
 ↓
-Failure Analytics
-↓
-Recommendation Engine
-↓
-Counterfactual Failure Prevention
-↓
-What-If Simulation
+Domain Model Manager
 ↓
 FastAPI Backend
 ↓
 React Dashboard
 ↓
+Prediction
+↓
+Recommendation
+↓
+Counterfactual Prevention
+↓
+What-If Simulation
+↓
 Preventive Decision Support
 
-# ============================================================ 5. STANDARD DATA SCHEMA
+============================================================ 5. CURRENT ML ARCHITECTURE
+============================================================
 
-All four datasets were converted into a common schema:
+The architecture was changed from the original single common
+model approach to domain-specific ML models.
 
-Domain
-Failure_Type
-Severity
-Score
-Description
+Current architecture:
 
----
+React Dashboard
+↓
+FastAPI
+↓
+DomainModelManager
+↓
+┌──────────────┬──────────────┬──────────────┬──────────────┐
+│ Student │ Software │ Jobs │ Projects │
+│ model.pkl │ model.pkl │ model.pkl │ model.pkl │
+└──────────────┴──────────────┴──────────────┴──────────────┘
+↓
+Domain-Specific Prediction
+↓
+Recommendation / Counterfactual / What-If
 
-## 5.1 STUDENT DATASET
+This change was necessary because the original common input
+fields did not represent the actual important features of
+each domain.
 
-Domain:
-Student
+============================================================ 6. ACTUAL DATASET FEATURES
+============================================================
 
-Failure_Type:
+6.1 STUDENT
+
+Important actual features include:
+
+- absences
+- studytime
+- failures
+- G1
+- G2
+- G3
+
+Target:
+
 Exam Failure if G3 < 10
 Passed if G3 >= 10
 
-Severity:
-Failures
+Current ML features:
 
-Score:
-G3
+- absences
+- studytime
+- failures
+- G1
+- G2
 
-Description:
-Absences + Study Time
+Target:
+
+Derived from G3.
 
 ---
 
-## 5.2 SOFTWARE DATASET
+6.2 SOFTWARE
 
-Domain:
-Software
+Important actual features include:
 
-Failure_Type:
+- bugID
+- ct
+- sd
+- dt
+- cl
+- pd
+- co
+- rp
+- os
+- bs
+- rs
+- pr
+- bsr
+- re
+- at
+
+Target:
+
 rs
 
-Severity:
-Priority mapping:
+Important:
 
-P1 = 5
-P2 = 4
-P3 = 3
-P4 = 2
-P5 = 1
--- = 0
+rs is used as the target and must not be used as an input
+feature.
 
-Score:
-0.0
+Also:
 
-Description:
-sd
+bugID is an ID and should not be treated as a bug count.
+
+at contains values such as usernames in the available data
+and must not automatically be described as Test Coverage.
+
+Current ML features:
+
+- pr
+- cl
+- pd
+- co
+- rp
+- os
+- bs
+- bsr
+- re
+- at
+
+Target:
+
+rs
 
 ---
 
-## 5.3 JOBS DATASET
+6.3 JOBS
 
-Domain:
-Jobs
+Actual features:
 
-Failure_Type:
+- years_experience
+- skills_match_score
+- education_level
+- project_count
+- resume_length
+- github_activity
+- shortlisted
+
+Target:
+
 Selected if shortlisted = Yes
 Rejected if shortlisted = No
 
-Severity:
-skills_match_score
+Current ML features:
 
-Score:
-skills_match_score
+- years_experience
+- skills_match_score
+- education_level
+- project_count
+- resume_length
+- github_activity
 
-Description:
-Experience + years
+Target:
+
+shortlisted
 
 ---
 
-## 5.4 PROJECT DATASET
+6.4 PROJECTS
 
-Domain:
-Projects
+Actual features include:
 
-Failure_Type:
+- Project Name
+- Project Description
+- Project Type
+- Project Manager
+- Region
+- Department
+- Project Cost
+- Project Benefit
+- Complexity
+- Status
+- Completion%
+- Phase
+- Year
+- Month
+- Start Date
+- End Date
+
+Target:
+
 Status
 
-Severity:
-Completion%
+Current ML features:
 
-Score:
-Completion%
+- Complexity
+- Project Type
+- Region
+- Department
+- Project Cost
+- Project Benefit
+- Completion%
+- Phase
+- Year
+- Month
 
-Description:
-Project Name
+Important preprocessing:
 
-# ============================================================ 6. CURRENT PROJECT STRUCTURE
+Project Cost and Project Benefit are cleaned from
+comma-formatted strings into numeric values.
 
-AI-Failure-Intelligence-Platform/
+Completion% is cleaned from percentage strings into numeric
+values.
 
-backend/
-│
-├── ml/
-│ ├── classifier.py
-│ ├── clustering.py
-│ ├── evaluator.py
-│ └── trainer.py
-│
-├── services/
-│ └── preprocessing.py
-│
-├── recommendation/
-│ ├── **init**.py
-│ ├── templates.py
-│ ├── rules.py
-│ └── recommender.py
-│
-├── counterfactual/
-│ ├── **init**.py
-│ └── generator.py
-│
-├── what_if/
-│ ├── **init**.py
-│ └── simulator.py
-│
-└── api.py
+============================================================ 7. DATA COLLECTION
+============================================================
 
-models/
-├── best_classifier.pkl
-├── kmeans.pkl
-├── scaler.pkl
-└── encoders.pkl
+STATUS: COMPLETED
 
-scripts/
-├── test_recommendation.py
-├── test_counterfactual.py
-└── test_what_if.py
+Historical datasets are available for:
+
+- Student failures
+- Software failures
+- Job/recruitment outcomes
+- Project outcomes
+
+Data directories:
 
 data/
 ├── student/
@@ -209,265 +308,153 @@ data/
 └── projects/
 └── Project Management Dataset.csv
 
-# ============================================================ 7. DATA COLLECTION
+============================================================ 8. DATA STANDARDIZATION
+============================================================
 
 STATUS: COMPLETED
 
-Historical datasets have been collected for:
+The original project defined a common conceptual schema:
 
-- Student failures
-- Software failures
-- Job/recruitment outcomes
-- Project outcomes
+- Domain
+- Failure_Type
+- Severity
+- Score
+- Description
 
-# ============================================================ 8. DATA STANDARDIZATION
+However, the final ML prediction system now uses
+domain-specific features from the actual datasets.
 
-STATUS: COMPLETED
+This prevents the frontend inputs from becoming only cosmetic
+fields.
 
-All four datasets were transformed into the common schema:
-
-Domain
-Failure_Type
-Severity
-Score
-Description
-
-This allows the different failure domains to be processed by a
-common machine learning pipeline.
-
-# ============================================================ 9. DATA PREPROCESSING
+============================================================ 9. DATA PREPROCESSING
+============================================================
 
 STATUS: COMPLETED
 
-The preprocessing pipeline includes:
+The project includes:
 
 - Data cleaning
 - Missing value handling
 - Numerical preprocessing
-- Categorical encoding
-- Feature scaling
+- Categorical preprocessing
+- Feature transformation
+- Model-specific input preparation
 
-Missing values:
+The domain-specific trainer uses:
 
-- Numerical columns use median values.
-- Categorical columns use "Unknown".
+- Median imputation for numeric features
+- Most-frequent imputation for categorical features
+- OneHotEncoder with handle_unknown="ignore"
+- Random Forest classification
 
-Categorical values are encoded using LabelEncoder.
-
-The preprocessing system saves:
-
-scaler.pkl
-encoders.pkl
-
-The encoder file contains:
-
-Domain encoder
-Failure_Type encoder
-Description encoder
-
-Important:
-
-The existing preprocessing and ML pipeline should NOT be unnecessarily
-rewritten or refactored at this stage.
-
-# ============================================================ 10. CLASSIFICATION
-
-STATUS: COMPLETED
-
-Classification models were trained and evaluated.
-
-Models include:
-
-- Logistic Regression
-- Decision Tree
-- Random Forest
-
-The best classifier is selected based on accuracy.
-
-The selected model is saved as:
-
-models/best_classifier.pkl
-
-The classifier currently uses:
-
-Domain
-Severity
-Score
-Description
-
-to predict:
-
-Failure_Type
-
-# ============================================================ 11. MODEL EVALUATION
-
-STATUS: COMPLETED
-
-The classification models were evaluated using performance metrics,
-including accuracy.
-
-The best-performing classifier was selected and saved for use by the
-application.
-
-# ============================================================ 12. K-MEANS CLUSTERING
-
-STATUS: COMPLETED
-
-K-Means clustering was implemented to identify groups of similar
-failure cases.
-
-Different values of K were evaluated using silhouette score.
-
-The best K value was selected and the clustering model was saved as:
-
-models/kmeans.pkl
-
-# ============================================================ 13. FAILURE ANALYTICS
-
-STATUS: COMPLETED
-
-Failure analytics has been integrated into the recommendation workflow.
-
-The system can analyze:
-
-- Predicted failure type
-- Failure probability
-- Failure cluster
-- Historical failure patterns
-- Similar historical failures
-- Domain information
-
-# ============================================================ 14. RECOMMENDATION ENGINE
-
-STATUS: COMPLETED AND TESTED
-
-Files:
-
-backend/recommendation/
-├── **init**.py
-├── templates.py
-├── rules.py
-└── recommender.py
-
-The recommendation engine provides:
-
-- Failure prediction
-- Probability
-- Cluster information
-- Historical analysis
-- Similar failure cases
-- Recommendations
-- Improvement actions
-
-Example Student Input:
-
-{
-"Domain": "Student",
-"Severity": 4,
-"Score": 8,
-"Description": "Absences + Study Time"
-}
-
-Example Prediction:
-
-Failure Type:
-Exam Failure
-
-Cluster:
-2
-
-Example recommendations include:
-
-- Increase the final academic score before the next examination.
-- Previous failures are present; focus on subjects/areas where
-  difficulties occurred.
-- Improve academic performance before next exam.
-- Increase study time and follow consistent schedule.
-- Reduce avoidable absences and attend regularly.
-- Review previous weak areas and focus on targeted improvement.
-
-Example improvement actions:
-
-- Improve academic score
-- Reduce previous failures
-- Increase study time
-- Reduce avoidable absences
-
-Test Status:
-
-SUCCESSFUL
-
-# ============================================================ 15. COUNTERFACTUAL FAILURE PREVENTION
-
-STATUS: COMPLETED AND TESTED
+============================================================ 10. DOMAIN-SPECIFIC MODEL TRAINING
+============================================================
 
 File:
 
-backend/counterfactual/generator.py
+backend/ml/domain_trainer.py
 
 Purpose:
 
-The counterfactual module answers:
+Train one ML model for each supported domain using actual
+domain-specific features.
 
-"What changes could cause the predicted failure outcome to change?"
+Models generated:
 
-The system generates alternative scenarios by changing:
+models/student_model.pkl
+models/software_model.pkl
+models/jobs_model.pkl
+models/projects_model.pkl
 
-- Score
-- Severity
+Training results:
 
-It then checks whether the prediction changes.
+Student accuracy:
+0.8861
 
-The system identifies:
+Software accuracy:
+0.8079
 
-1. Original prediction
-2. Counterfactual scenarios
-3. Minimum effective change
-4. Highest-confidence scenario
-5. Recommended changes
+Jobs accuracy:
+0.8983
 
-Example input:
+Projects accuracy:
+0.6000
 
-{
-"Domain": "Student",
-"Severity": 4,
-"Score": 8,
-"Description": "Absences + Study Time"
-}
+Training status:
 
-Original prediction:
+SUCCESSFUL
+
+============================================================ 11. DOMAIN MODEL MANAGER
+============================================================
+
+File:
+
+backend/ml/domain_model_manager.py
+
+Purpose:
+
+- Load domain-specific models
+- Normalize domain names
+- Retrieve model features
+- Prepare frontend input
+- Run predictions
+- Return class probabilities
+
+Supported domains:
+
+Student
+Software
+Jobs
+Projects
+
+The manager correctly loads:
+
+student_model.pkl
+software_model.pkl
+jobs_model.pkl
+projects_model.pkl
+
+Testing confirmed that the correct feature lists are loaded
+for all four domains.
+
+============================================================ 12. STUDENT MODEL TESTING
+============================================================
+
+Student model was tested using domain-specific inputs.
+
+Weak Student Example:
+
+Domain = Student
+absences = 30
+studytime = 1
+failures = 3
+G1 = 7
+G2 = 6
+
+Prediction:
 
 Exam Failure
 
 Probability:
 
-0.48898141677472046
+95.5%
 
-Counterfactual examples:
+Class probabilities:
 
-Score 9
-→ Passed
-→ Probability: 0.506483515291659
+Exam Failure = 95.5%
+Passed = 4.5%
 
-Score 10
-→ Passed
-→ Probability: 0.5580322221043557
+---
 
-Score 9 + Severity 3
-→ Passed
-→ Probability: 0.5246562983356684
+Strong Student Example:
 
-Severity 2
-→ Passed
-→ Probability: 0.4910010874868412
-
-Score 11
-→ Passed
-→ Probability: 0.6082647864741663
-
-Minimum effective change:
-
-Score 8 → Score 9
+Domain = Student
+absences = 2
+studytime = 4
+failures = 0
+G1 = 18
+G2 = 18
 
 Prediction:
 
@@ -475,97 +462,26 @@ Passed
 
 Probability:
 
-0.506483515291659
+99.5%
 
-Highest-confidence scenario:
+Class probabilities:
 
-Score 18 + Severity 1
+Exam Failure = 0.5%
+Passed = 99.5%
 
-Prediction:
+This confirmed that actual domain-specific inputs affect
+the ML prediction.
 
-Passed
+============================================================ 13. FASTAPI BACKEND
+============================================================
 
-Probability:
+STATUS: COMPLETED AND WORKING
 
-0.888672052892537
-
-Recommended change:
-
-Increase score from 8 toward 9.
-
-Important:
-
-The counterfactual module is positioned as a preventive decision-support
-component. It should not be described as an entirely new invention of
-counterfactual explanations. The project novelty comes from integrating
-multi-domain failure analysis, prediction, clustering, historical
-analytics, recommendations, counterfactual prevention, and interactive
-what-if simulation into one platform.
-
-# ============================================================ 16. WHAT-IF SIMULATOR
-
-STATUS: COMPLETED AND TESTED
-
-Files:
-
-backend/what_if/
-├── **init**.py
-└── simulator.py
-
-Purpose:
-
-The What-If Simulator allows the user to manually change input values
-and immediately see how the prediction changes.
-
-Example:
-
-Original:
-
-Score = 8
-
-What-If:
-
-Score = 9
-
-Result:
-
-Original prediction:
-Exam Failure
-
-Original probability:
-48.90%
-
-New prediction:
-Passed
-
-New probability:
-50.65%
-
-Probability change:
-
-+1.75 percentage points
-
-Prediction changed:
-
-True
-
-This allows users to interactively test possible interventions.
-
-# ============================================================ 17. FASTAPI BACKEND
-
-STATUS: COMPLETED AND TESTED
-
-FastAPI has been installed and configured.
-
-Swagger documentation is available through:
-
-/docs
-
-Current backend file:
+File:
 
 backend/api.py
 
-Application title:
+Application:
 
 AI Failure Intelligence Platform
 
@@ -573,9 +489,13 @@ Version:
 
 1.0
 
-# ============================================================ 18. CURRENT API ENDPOINTS
+CORS configured for:
 
-The backend currently provides:
+http://localhost:5173
+http://127.0.0.1:5173
+
+============================================================ 14. CURRENT API ENDPOINTS
+============================================================
 
 GET /health
 
@@ -589,303 +509,833 @@ POST /what-if
 
 ---
 
-## 18.1 HEALTH ENDPOINT
-
-Endpoint:
-
-GET /health
+14.1 GET /health
 
 Purpose:
 
 Checks whether the API is running.
 
-Successful response:
+Status:
 
-{
-"status": "ok",
-"message": "AI Failure Intelligence API is running"
-}
+SUCCESSFUL
 
 ---
 
-## 18.2 PREDICT ENDPOINT
-
-Endpoint:
-
-POST /predict
+14.2 POST /predict
 
 Purpose:
 
-Predicts the failure type and probability.
+Runs the correct domain-specific ML model.
 
-Example input:
+Returns:
 
-{
-"Domain": "Student",
-"Severity": 4,
-"Score": 8,
-"Description": "Absences + Study Time"
-}
+- domain
+- failure_type
+- probability
+- class_probabilities
 
-Example result:
+Status:
 
-Failure Type:
+SUCCESSFUL
+
+---
+
+14.3 POST /recommend
+
+Purpose:
+
+Generates recommendations and improvement actions.
+
+Status:
+
+SUCCESSFUL
+
+---
+
+14.4 POST /counterfactual
+
+Purpose:
+
+Generates alternative input scenarios and determines whether
+the model prediction changes.
+
+Returns:
+
+- original_input
+- original_prediction
+- desired_prediction
+- counterfactuals
+- minimum_effective_change
+- highest_confidence_scenario
+- recommended_changes
+
+Status:
+
+SUCCESSFUL
+
+---
+
+14.5 POST /what-if
+
+Purpose:
+
+Allows the user to manually change an input feature and run
+the model again.
+
+Returns:
+
+- original_input
+- changes
+- new_input
+- original_prediction
+- new_prediction
+- original_probability
+- new_probability
+- probability_change
+- class_probabilities_before
+- class_probabilities_after
+- prediction_changed
+
+Status:
+
+SUCCESSFUL
+
+============================================================ 15. RECOMMENDATION ENGINE
+============================================================
+
+Files:
+
+backend/recommendation/recommender.py
+backend/recommendation/rules.py
+backend/recommendation/templates.py
+
+The recommendation system has been adapted to work with the
+new domain-specific ML architecture.
+
+Current recommendation output includes:
+
+- domain
+- prediction
+- probability
+- class probabilities
+- cluster information
+- historical analysis
+- similar failures
+- recommendations
+- improvement actions
+
+Important current limitation:
+
+The latest recommender is a compatibility implementation for
+the new domain-specific model architecture.
+
+The cluster and historical-analysis fields are currently
+placeholder/compatibility outputs rather than a complete
+reimplementation of the original clustering and historical
+analytics pipeline.
+
+This should be improved later if required.
+
+============================================================ 16. COUNTERFACTUAL FAILURE PREVENTION
+============================================================
+
+File:
+
+backend/counterfactual/generator.py
+
+Class:
+
+CounterfactualGenerator
+
+Purpose:
+
+Find input changes that can make the trained model predict a
+different outcome.
+
+The system evaluates:
+
+1. Original prediction
+2. Alternative scenarios
+3. Minimum effective change
+4. Highest-confidence scenario
+5. Recommended changes
+
+---
+
+CURRENT STUDENT COUNTERFACTUAL TEST
+
+Original input:
+
+Domain = Student
+absences = 2
+studytime = 4
+failures = 0
+G1 = 18
+G2 = 18
+
+Original prediction:
+
+Passed
+
+Original probability:
+
+99.50%
+
+Target prediction:
+
+Exam Failure
+
+Minimum effective change:
+
+G2
+
+Change:
+
+G2 = 5
+
+New prediction:
+
 Exam Failure
 
 Probability:
-0.48898141677472046
 
-The endpoint also returns class probabilities for all learned
-failure classes.
+78.40%
 
----
+Highest-confidence scenario:
 
-## 18.3 RECOMMEND ENDPOINT
+G1 + G2 + absences
 
-Endpoint:
+Change:
 
-POST /recommend
+G1 = 5
+G2 = 5
+absences = 20
 
-Purpose:
+Prediction:
 
-Provides:
+Exam Failure
 
-- Prediction
-- Probability
-- Cluster
-- Historical analysis
-- Similar failures
-- Recommendations
-- Improvement actions
+Probability:
 
-STATUS:
+98.50%
+
+Status:
 
 SUCCESSFUL
 
----
+Important:
 
-## 18.4 COUNTERFACTUAL ENDPOINT
+This is model-based counterfactual analysis, not a causal
+claim.
 
-Endpoint:
+============================================================ 17. WHAT-IF SIMULATION
+============================================================
 
-POST /counterfactual
+File:
 
-Purpose:
+backend/what_if/simulator.py
 
-Determines what changes could potentially change the predicted outcome.
+Class:
 
-Supports optional:
-
-desired_prediction
-
-STATUS:
-
-SUCCESSFUL
-
----
-
-## 18.5 WHAT-IF ENDPOINT
-
-Endpoint:
-
-POST /what-if
+WhatIfSimulator
 
 Purpose:
 
-Allows manual simulation of changes to the input.
+Allow the user to manually modify a domain feature and
+observe the model's new prediction.
 
-Example:
+The simulator:
+
+1. Takes original input.
+2. Generates original prediction.
+3. Applies user-selected changes.
+4. Generates new prediction.
+5. Compares probabilities.
+6. Determines whether the predicted class changed.
+
+---
+
+CURRENT STUDENT WHAT-IF TEST
+
+Original:
+
+G2 = 18
+
+What-If:
+
+G2 = 5
+
+Frontend console confirmed:
+
+What-If data:
+Domain = Student
+G1 = 18
+G2 = 18
+absences = 2
+failures = 0
+studytime = 4
+
+What-If changes:
+
+G2 = 5
+
+The request is correctly reaching the backend.
+
+The What-If pipeline is therefore WORKING CORRECTLY.
+
+Important:
+
+The frontend and backend are successfully communicating the
+selected What-If value.
+
+============================================================ 18. REACT FRONTEND
+============================================================
+
+STATUS: WORKING
+
+Frontend location:
+
+frontend/
+
+Vite React application.
+
+Frontend server:
+
+http://localhost:5173/
+
+The React dashboard currently provides domain-specific inputs
+and communicates with the FastAPI backend.
+
+The frontend has been updated so that the domain-specific
+inputs actually affect ML predictions.
+
+============================================================ 19. FRONTEND DOMAIN INPUTS
+============================================================
+
+Student:
+
+- absences
+- studytime
+- failures
+- G1
+- G2
+
+Software:
+
+- pr
+- cl
+- pd
+- co
+- rp
+- os
+- bs
+- bsr
+- re
+- at
+
+Jobs:
+
+- years_experience
+- skills_match_score
+- education_level
+- project_count
+- resume_length
+- github_activity
+
+Projects:
+
+- Complexity
+- Project Type
+- Region
+- Department
+- Project Cost
+- Project Benefit
+- Completion
+- Phase
+- Year
+- Month
+
+============================================================ 20. FRONTEND WHAT-IF CONTROLS
+============================================================
+
+Current What-If behavior:
+
+Student:
+
+Change G2
+
+Jobs:
+
+Change skills_match_score
+
+Projects:
+
+Change Completion
+
+Software:
+
+Change cl
+
+The frontend creates a domain-specific changes object.
+
+Example Student:
 
 {
-"Domain": "Student",
-"Severity": 4,
-"Score": 8,
-"Description": "Absences + Study Time",
+"G2": 5
+}
+
+The backend receives:
+
+{
+...original_data,
 "changes": {
-"Score": 9
+"G2": 5
 }
 }
 
-STATUS:
+============================================================ 21. CURRENT FRONTEND STATUS
+============================================================
 
-SUCCESSFUL
-
-# ============================================================ 19. FASTAPI TESTING STATUS
-
-All current backend endpoints have been tested through Swagger.
-
-Tested:
-
-[✓] GET /health
-[✓] POST /predict
-[✓] POST /recommend
-[✓] POST /counterfactual
-[✓] POST /what-if
-
-Backend status:
+React dashboard:
 
 WORKING
 
-# ============================================================ 20. CURRENT WORKING SYSTEM
+Frontend/API integration:
 
-At this point, the project has progressed beyond a simple ML model.
+WORKING
 
-The current working backend can:
+Prediction:
 
-1. Accept failure-related input.
-2. Predict a failure outcome.
-3. Calculate prediction probabilities.
-4. Identify a failure cluster.
-5. Analyze historical failure information.
-6. Find similar failure cases.
-7. Generate recommendations.
-8. Suggest improvement actions.
-9. Generate counterfactual scenarios.
-10. Identify minimum effective changes.
-11. Run interactive what-if simulations.
-12. Expose all major functionality through REST APIs.
+WORKING
 
-# ============================================================ 21. CURRENT ARCHITECTURE STATUS
+Counterfactual:
 
-COMPLETED:
+WORKING
 
-[✓] Data Collection
-[✓] Data Standardization
-[✓] Data Preprocessing
-[✓] Classification
-[✓] Model Evaluation
-[✓] K-Means Clustering
-[✓] Failure Analytics
-[✓] Recommendation Engine
-[✓] Counterfactual Failure Prevention
-[✓] What-If Simulator
-[✓] FastAPI Backend
-[✓] Swagger API Testing
+What-If:
 
-PENDING:
+WORKING
 
-[ ] React Dashboard
-[ ] Frontend/API Integration
-[ ] Full Integration Testing
-[ ] End-to-End Testing
-[ ] UI Improvements
-[ ] Deployment
-[ ] Final Documentation
-[ ] Final Project Demonstration
+Buttons:
 
-# ============================================================ 22. NEXT DEVELOPMENT PHASE
+WORKING
 
-NEXT PHASE:
+Browser console confirmed that What-If data and changes are
+being sent correctly.
 
-REACT DASHBOARD
+============================================================ 22. CURRENT PROJECT STRUCTURE
+============================================================
 
-Planned implementation order:
+AI-Failure-Intelligence-Platform/
 
-1. Check Node.js and npm installation.
+├── .github/
+│
+├── .venv/
+│
+├── app/
+│
+├── backend/
+│ │
+│ ├── ml/
+│ │ ├── classifier.py
+│ │ ├── clustering.py
+│ │ ├── evaluator.py
+│ │ ├── trainer.py
+│ │ ├── domain_trainer.py
+│ │ └── domain_model_manager.py
+│ │
+│ ├── services/
+│ │ └── preprocessing.py
+│ │
+│ ├── recommendation/
+│ │ ├── **init**.py
+│ │ ├── templates.py
+│ │ ├── rules.py
+│ │ └── recommender.py
+│ │
+│ ├── counterfactual/
+│ │ ├── **init**.py
+│ │ ├── generator.py
+│ │ └── generator_backup.py
+│ │
+│ ├── what_if/
+│ │ ├── **init**.py
+│ │ └── simulator.py
+│ │
+│ ├── api.py
+│ └── api_backup.py
+│
+├── data/
+│ ├── student/
+│ ├── software/
+│ ├── jobs/
+│ └── projects/
+│
+├── docs/
+│
+├── frontend/
+│ ├── src/
+│ │ ├── App.jsx
+│ │ ├── App.css
+│ │ └── main.jsx
+│ └── ...
+│
+├── models/
+│ ├── student_model.pkl
+│ ├── software_model.pkl
+│ ├── jobs_model.pkl
+│ ├── projects_model.pkl
+│ │
+│ ├── best_classifier.pkl
+│ ├── kmeans.pkl
+│ ├── scaler.pkl
+│ ├── encoders.pkl
+│ │
+│ └── backup/
+│
+├── notebooks/
+│
+├── scripts/
+│
+├── tests/
+│
+├── PROJECT_PROGRESS.md
+├── README.md
+└── requirements.txt
 
-Commands:
+============================================================ 23. BACKUP FILES
+============================================================
 
-node --version
-npm --version
+Backups were intentionally created before major architecture
+changes.
 
-2. Create the React frontend.
+Current backups:
 
-3. Verify that the React application runs successfully.
+backend/counterfactual/generator_backup.py
 
-4. Connect React frontend to:
+backend/recommendation/recommender_backup.py
 
-POST /predict
+backend/api_backup.py
 
-5. Display prediction results.
+models/backup/
 
-6. Connect and display:
+IMPORTANT:
 
-POST /recommend
+DO NOT DELETE THESE YET.
 
-7. Add recommendation and improvement-action sections.
+The architecture was changed recently and the project should
+first undergo a dependency/architecture audit.
 
-8. Connect and display:
+After confirming which files are still required, unnecessary
+backup or obsolete files can be removed safely.
 
-POST /counterfactual
+============================================================ 24. IMPORTANT ARCHITECTURE CLEANUP NOTE
+============================================================
 
-9. Add counterfactual scenario visualization.
+The project previously used a common model architecture based
+on:
 
-10. Connect:
+- Domain
+- Severity
+- Score
+- Description
 
-POST /what-if
+The current architecture uses domain-specific features and
+separate models.
 
-11. Add interactive What-If controls.
+Therefore, some older files may now be unused or partially
+obsolete.
 
-12. Improve dashboard UI.
+DO NOT DELETE FILES RANDOMLY.
 
-13. Perform complete frontend-backend integration testing.
+The next cleanup task should be:
 
-14. Perform end-to-end testing.
+1. Identify all Python files.
+2. Check imports and references.
+3. Identify files still used by the current API.
+4. Identify obsolete model files.
+5. Identify obsolete scripts.
+6. Identify duplicate backup files.
+7. Remove only files confirmed to be unnecessary.
+8. Run backend tests again.
+9. Run frontend tests again.
+10. Confirm the application still works.
 
-15. Prepare deployment.
+============================================================ 25. OLD MODEL FILES
+============================================================
 
-16. Complete final documentation.
-
-17. Prepare project demonstration.
-
-# ============================================================ 23. IMPORTANT DEVELOPMENT RULES
-
-Do NOT unnecessarily rewrite the existing ML pipeline.
-
-Use the existing trained model files:
+The following files belong to the older architecture:
 
 models/best_classifier.pkl
 models/kmeans.pkl
 models/scaler.pkl
 models/encoders.pkl
 
-The current ML pipeline is already working.
+They should NOT be deleted immediately.
 
-Future development should focus on:
+The current domain-specific models are:
 
-- Frontend
-- API integration
-- User experience
-- Testing
-- Deployment
-- Documentation
+models/student_model.pkl
+models/software_model.pkl
+models/jobs_model.pkl
+models/projects_model.pkl
 
-Each development step should be tested before moving to the next step.
+The old models should first be checked for remaining usage.
 
-# ============================================================ 24. CURRENT DEVELOPMENT COMMANDS
+============================================================ 26. IMPORTANT DEVELOPMENT RULES
+============================================================
+
+1. Do not unnecessarily rewrite the working ML pipeline.
+
+2. Do not delete files until their usage has been checked.
+
+3. Keep working backups until the new architecture is stable.
+
+4. Test every major change before moving forward.
+
+5. Use actual dataset features.
+
+6. Do not invent dataset fields that do not exist.
+
+7. Do not treat IDs as meaningful predictive features.
+
+8. Do not use target columns as input features.
+
+9. Do not describe model counterfactuals as causal evidence.
+
+10. Keep frontend and backend field names synchronized.
+
+============================================================ 27. CURRENT DEVELOPMENT COMMANDS
+============================================================
 
 Backend:
 
 uvicorn backend.api:app --reload
 
+Backend:
+
+http://127.0.0.1:8000
+
 Swagger:
 
 http://127.0.0.1:8000/docs
 
-Health check:
+Health:
 
 http://127.0.0.1:8000/health
 
-The FastAPI server should remain running while the React frontend is
-developed in a separate terminal.
+Frontend:
 
-# ============================================================ 25. PROJECT NOVELTY / CONTRIBUTION
+npm run dev
 
-The project is not positioned as merely another classification model.
+Frontend:
+
+http://localhost:5173/
+
+Node version confirmed:
+
+v24.14.1
+
+npm version confirmed:
+
+11.11.0
+
+============================================================ 28. CURRENT TESTING STATUS
+============================================================
+
+Backend:
+
+[✓] FastAPI starts
+[✓] CORS configured
+[✓] /health
+[✓] /predict
+[✓] /recommend
+[✓] /counterfactual
+[✓] /what-if
+
+ML:
+
+[✓] Student model
+[✓] Software model
+[✓] Jobs model
+[✓] Projects model
+
+Frontend:
+
+[✓] React application starts
+[✓] Domain selection
+[✓] Domain-specific input fields
+[✓] Prediction request
+[✓] Prediction display
+[✓] Counterfactual request
+[✓] Counterfactual display
+[✓] What-If input
+[✓] What-If request
+[✓] What-If backend communication
+
+============================================================ 29. CURRENT PROJECT STATUS
+============================================================
+
+DATA COLLECTION:
+
+COMPLETED ✓
+
+DATA STANDARDIZATION:
+
+COMPLETED ✓
+
+DATA PREPROCESSING:
+
+COMPLETED ✓
+
+DOMAIN-SPECIFIC MODEL TRAINING:
+
+COMPLETED ✓
+
+MODEL EVALUATION:
+
+COMPLETED ✓
+
+DOMAIN MODEL MANAGER:
+
+COMPLETED ✓
+
+FASTAPI BACKEND:
+
+COMPLETED ✓
+
+RECOMMENDATION ENGINE:
+
+WORKING ✓
+
+COUNTERFACTUAL PREVENTION:
+
+WORKING ✓
+
+WHAT-IF SIMULATION:
+
+WORKING ✓
+
+REACT DASHBOARD:
+
+WORKING ✓
+
+FRONTEND/API INTEGRATION:
+
+WORKING ✓
+
+FULL FOUR-DOMAIN TESTING:
+
+PENDING
+
+ARCHITECTURE CLEANUP:
+
+PENDING
+
+UI POLISH:
+
+PENDING
+
+DEPLOYMENT:
+
+PENDING
+
+FINAL DOCUMENTATION:
+
+PENDING
+
+FINAL PROJECT DEMONSTRATION:
+
+PENDING
+
+============================================================ 30. NEXT DEVELOPMENT PHASE
+============================================================
+
+NEXT TASK:
+
+SAFE ARCHITECTURE AUDIT AND CLEANUP
+
+Do NOT immediately delete files.
+
+First:
+
+1. Inspect current project structure.
+2. Identify imports.
+3. Identify obsolete code.
+4. Identify old model dependencies.
+5. Identify duplicate files.
+6. Confirm which files are actually required.
+7. Remove unnecessary files only after verification.
+
+---
+
+AFTER CLEANUP:
+
+Test all four domains.
+
+Student:
+
+- Prediction
+- Recommendation
+- Counterfactual
+- What-If
+
+Software:
+
+- Prediction
+- Recommendation
+- Counterfactual
+- What-If
+
+Jobs:
+
+- Prediction
+- Recommendation
+- Counterfactual
+- What-If
+
+Projects:
+
+- Prediction
+- Recommendation
+- Counterfactual
+- What-If
+
+---
+
+THEN:
+
+- UI improvements
+- Error handling improvements
+- Loading indicators
+- Better result visualization
+- Validation of domain inputs
+- Final integration testing
+- End-to-end testing
+- Documentation
+- Project demonstration
+- Deployment
+
+============================================================ 31. PROJECT NOVELTY / CONTRIBUTION
+============================================================
+
+The project is not positioned as merely another classification
+model.
 
 The main contribution is the integration of:
 
 - Multi-domain failure analysis
-- Failure prediction
+- Domain-specific failure prediction
 - Failure clustering
 - Historical failure analytics
 - Similar-case analysis
 - Recommendation generation
+- Improvement actions
 - Counterfactual failure prevention
 - Minimum effective intervention identification
 - Interactive What-If simulation
 - REST API
-- Preventive decision support dashboard
+- React preventive decision-support dashboard
 
 The system therefore moves from:
 
@@ -893,96 +1343,155 @@ The system therefore moves from:
 
 towards:
 
-"Understand why failure is likely, learn from historical failures,
-recommend improvements, and explore what changes could reduce the
-failure risk."
+"Understand the predicted outcome, provide recommendations,
+explore possible interventions, and interactively test how
+changes affect the model prediction."
 
-# ============================================================ 26. CURRENT PROJECT STATUS
+============================================================ 32. CURRENT CONFIRMED WORKING EXAMPLE
+============================================================
 
-PROJECT STATUS:
+STUDENT DOMAIN
 
-BACKEND + AI CORE = COMPLETED
+Original:
 
-The AI and backend portion of the platform is currently working and
-has been tested successfully.
+absences = 2
+studytime = 4
+failures = 0
+G1 = 18
+G2 = 18
 
-The next major task is:
+Prediction:
 
-REACT FRONTEND DEVELOPMENT
+Passed
 
-# ============================================================ 27. IMMEDIATE NEXT STEP
+Probability:
 
-Open a second PowerShell terminal while keeping FastAPI running.
+99.50%
 
-Navigate to:
+Counterfactual:
 
-C:\Users\ELCOT\AI-Failure-Intelligence-Platform
+G2 = 5
 
-Activate the virtual environment if required.
+Prediction:
 
-Then check:
+Exam Failure
 
-node --version
-npm --version
+Probability:
 
-After confirming Node.js and npm are available, create the React
-frontend and test that it runs successfully before connecting it to
-the FastAPI backend.
+78.40%
 
-# ============================================================ 28. FINAL PROJECT GOAL
+What-If:
+
+G2 = 5
+
+Frontend console confirmed:
+
+What-If data correctly received.
+
+What-If changes correctly created:
+
+{
+"G2": 5
+}
+
+What-If request correctly sent to backend.
+
+STATUS:
+
+WORKING CORRECTLY ✓
+
+============================================================ 33. IMPORTANT CURRENT POSITION
+============================================================
+
+The project has successfully moved from the original
+single-model/common-feature architecture to a domain-specific
+ML architecture.
+
+The most important functionality is now working:
+
+DOMAIN INPUT
+↓
+DOMAIN-SPECIFIC ML MODEL
+↓
+PREDICTION
+↓
+RECOMMENDATION
+↓
+COUNTERFACTUAL
+↓
+WHAT-IF
+
+The next step is NOT to rebuild the system.
+
+The next step is to:
+
+AUDIT → CLEAN → TEST → POLISH → DOCUMENT → DEMONSTRATE
+
+============================================================ 34. TOMORROW'S STARTING POINT
+============================================================
+
+When continuing this project, start here:
+
+"Continue the AI Failure Intelligence Platform from the latest
+progress.
+
+The domain-specific ML architecture is working.
+
+Student prediction is tested.
+
+Counterfactual Prevention is working.
+
+What-If Simulation is working.
+
+The React frontend is connected to FastAPI.
+
+The latest confirmed What-If test successfully sent:
+
+G2 = 5
+
+for a Student input where:
+
+G2 = 18
+
+The next task is a SAFE ARCHITECTURE AUDIT AND CLEANUP.
+
+Do not delete files blindly.
+
+First inspect imports, dependencies, old models, duplicate
+files, and obsolete code.
+
+Then test all four domains end-to-end:
+
+Student
+Software
+Jobs
+Projects
+
+After that, continue with UI polishing, final integration
+testing, documentation, deployment, and project demonstration."
+
+============================================================ 35. FINAL PROJECT GOAL
+============================================================
 
 The final platform should allow a user to:
 
 1. Select a failure domain.
-2. Enter failure-related information.
+2. Enter domain-specific information.
 3. Predict the likely outcome.
 4. View prediction probability.
-5. Understand historical failure patterns.
-6. View similar failures.
-7. Receive recommendations.
-8. View improvement actions.
-9. Explore counterfactual prevention scenarios.
-10. Identify the minimum effective intervention.
-11. Perform What-If simulations.
-12. Understand how changing inputs can affect the predicted outcome.
+5. Receive recommendations.
+6. View improvement actions.
+7. Explore counterfactual prevention scenarios.
+8. Identify minimum effective model-based changes.
+9. Perform What-If simulations.
+10. Understand how changing inputs affects the trained model's
+    predicted outcome.
+11. Use the system as a preventive decision-support platform.
 
-Final system:
+FINAL SYSTEM NAME:
 
 AI Failure Intelligence and Preventive Decision Support Platform
 
 ============================================================
-CURRENT POSITION IN PROJECT
+END OF PROJECT PROGRESS
 ============================================================
-
-DATA + ML:
-COMPLETED ✓
-
-ANALYTICS:
-COMPLETED ✓
-
-RECOMMENDATION:
-COMPLETED ✓
-
-COUNTERFACTUAL:
-COMPLETED ✓
-
-WHAT-IF:
-COMPLETED ✓
-
-FASTAPI:
-COMPLETED ✓
-
-REACT DASHBOARD:
-NEXT STEP →
-
-INTEGRATION TESTING:
-PENDING
-
-DEPLOYMENT:
-PENDING
-
-FINAL DOCUMENTATION:
-PENDING
-
-PROJECT DEMONSTRATION:
-PENDING

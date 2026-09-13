@@ -1,220 +1,508 @@
-# backend/counterfactual/generator.py
-
-import os
-import joblib
-import pandas as pd
+from backend.ml.domain_model_manager import (
+    DomainModelManager
+)
 
 
 class CounterfactualGenerator:
 
     def __init__(self, model_dir="models"):
-        self.model = joblib.load(
-            os.path.join(model_dir, "best_classifier.pkl")
-        )
-        self.scaler = joblib.load(
-            os.path.join(model_dir, "scaler.pkl")
-        )
-        self.encoders = joblib.load(
-            os.path.join(model_dir, "encoders.pkl")
-        )
-        self.failure_encoder = self.encoders["Failure_Type"]
-
-    def _encode(self, col, value):
-        try:
-            return self.encoders[col].transform([value])[0]
-        except Exception:
-            return 0
-
-    def _process(self, data):
-        df = pd.DataFrame([{
-            "Domain": self._encode("Domain", data["Domain"]),
-            "Severity": float(data["Severity"]),
-            "Score": float(data["Score"]),
-            "Description": self._encode(
-                "Description", data["Description"]
-            )
-        }])
-
-        return pd.DataFrame(
-            self.scaler.transform(df),
-            columns=df.columns
+        self.manager = DomainModelManager(
+            model_dir
         )
 
     def predict(self, data):
-        x = self._process(data)
-        pred = self.model.predict(x)[0]
-        label = self.failure_encoder.inverse_transform([pred])[0]
 
-        probs = self.model.predict_proba(x)[0]
-        classes = self.model.classes_
+        domain = data.get("Domain")
 
-        class_probs = {
-            self.failure_encoder.inverse_transform([c])[0]:
-            float(p)
-            for c, p in zip(classes, probs)
-        }
+        result = self.manager.predict(
+            domain,
+            data
+        )
 
         return {
-            "failure_type": label,
-            "probability": float(max(probs)),
-            "class_probabilities": class_probs
+            "domain": domain,
+            "failure_type":
+                result["failure_type"],
+            "probability":
+                result["probability"],
+            "class_probabilities":
+                result.get(
+                    "class_probabilities",
+                    {}
+                )
         }
 
-    def _candidates(self, original):
+    def _student_candidates(self, data):
+
         candidates = []
 
-        for score in [
-            original["Score"],
-            original["Score"] + 1,
-            original["Score"] + 2,
-            original["Score"] + 3,
-            original["Score"] + 5,
-            original["Score"] + 7,
-            original["Score"] + 10
-        ]:
-            candidates.append({
-                **original,
-                "Score": score
-            })
+        try:
+            g1 = float(data.get("G1"))
+            g2 = float(data.get("G2"))
+            absences = float(
+                data.get("absences")
+            )
+            failures = float(
+                data.get("failures")
+            )
+            studytime = float(
+                data.get("studytime")
+            )
+        except (TypeError, ValueError):
+            return candidates
 
-        for severity in [
-            original["Severity"],
-            max(0, original["Severity"] - 1),
-            max(0, original["Severity"] - 2),
-            max(0, original["Severity"] - 3)
-        ]:
-            candidates.append({
-                **original,
-                "Severity": severity
-            })
+        # G1 changes
 
-        for score in [
-            original["Score"] + 1,
-            original["Score"] + 3,
-            original["Score"] + 5,
-            original["Score"] + 7,
-            original["Score"] + 10
-        ]:
-            for severity in [
-                max(0, original["Severity"] - 1),
-                max(0, original["Severity"] - 2),
-                max(0, original["Severity"] - 3)
-            ]:
+        for value in [5, 7, 9, 11, 13, 15]:
+
+            if value != g1:
+
                 candidates.append({
-                    **original,
-                    "Score": score,
-                    "Severity": severity
+                    "feature": "G1",
+                    "old_value": g1,
+                    "new_value": value,
+                    "changes": {
+                        "G1": value
+                    }
+                })
+
+        # G2 changes
+
+        for value in [5, 7, 9, 11, 13, 15]:
+
+            if value != g2:
+
+                candidates.append({
+                    "feature": "G2",
+                    "old_value": g2,
+                    "new_value": value,
+                    "changes": {
+                        "G2": value
+                    }
+                })
+
+        # Absence changes
+
+        for value in [
+            0,
+            5,
+            10,
+            20,
+            30,
+            40,
+            50
+        ]:
+
+            if value != absences:
+
+                candidates.append({
+                    "feature": "absences",
+                    "old_value": absences,
+                    "new_value": value,
+                    "changes": {
+                        "absences": value
+                    }
+                })
+
+        # Previous failures
+
+        for value in [0, 1, 2, 3]:
+
+            if value != failures:
+
+                candidates.append({
+                    "feature": "failures",
+                    "old_value": failures,
+                    "new_value": value,
+                    "changes": {
+                        "failures": value
+                    }
+                })
+
+        # Study time
+
+        for value in [1, 2, 3, 4]:
+
+            if value != studytime:
+
+                candidates.append({
+                    "feature": "studytime",
+                    "old_value": studytime,
+                    "new_value": value,
+                    "changes": {
+                        "studytime": value
+                    }
+                })
+
+        # G1 + G2
+
+        for new_g1 in [5, 7, 9, 11]:
+
+            for new_g2 in [5, 7, 9, 11]:
+
+                if (
+                    new_g1 != g1
+                    or new_g2 != g2
+                ):
+
+                    candidates.append({
+                        "feature": "G1 + G2",
+                        "old_value":
+                            f"{g1}, {g2}",
+                        "new_value":
+                            f"{new_g1}, {new_g2}",
+                        "changes": {
+                            "G1": new_g1,
+                            "G2": new_g2
+                        }
+                    })
+
+        # G2 + absences
+
+        for new_g2 in [5, 7, 9, 11]:
+
+            for new_absences in [
+                20,
+                30,
+                40,
+                50
+            ]:
+
+                candidates.append({
+                    "feature":
+                        "G2 + absences",
+                    "old_value":
+                        f"{g2}, {absences}",
+                    "new_value":
+                        f"{new_g2}, "
+                        f"{new_absences}",
+                    "changes": {
+                        "G2": new_g2,
+                        "absences":
+                            new_absences
+                    }
+                })
+
+        # G1 + G2 + absences
+
+        for new_g1 in [5, 7, 9]:
+
+            for new_g2 in [5, 7, 9]:
+
+                for new_absences in [
+                    20,
+                    30,
+                    40
+                ]:
+
+                    candidates.append({
+                        "feature":
+                            "G1 + G2 + absences",
+                        "old_value":
+                            f"{g1}, {g2}, "
+                            f"{absences}",
+                        "new_value":
+                            f"{new_g1}, {new_g2}, "
+                            f"{new_absences}",
+                        "changes": {
+                            "G1": new_g1,
+                            "G2": new_g2,
+                            "absences":
+                                new_absences
+                        }
+                    })
+
+        return candidates
+
+    def _generic_candidates(
+        self,
+        data,
+        domain
+    ):
+
+        candidates = []
+
+        features = {
+            "Jobs": [
+                "years_experience",
+                "skills_match_score",
+                "project_count",
+                "resume_length",
+                "github_activity"
+            ],
+            "Projects": [
+                "Project_Cost",
+                "Project_Benefit",
+                "Completion",
+                "Year",
+                "Month"
+            ],
+            "Software": [
+                "cl",
+                "pd",
+                "co",
+                "rp",
+                "bs",
+                "bsr"
+            ]
+        }
+
+        for feature in features.get(
+            domain,
+            []
+        ):
+
+            value = data.get(feature)
+
+            try:
+                value = float(value)
+            except (TypeError, ValueError):
+                continue
+
+            values = []
+
+            if feature == "skills_match_score":
+
+                values = [
+                    max(0, value - 20),
+                    max(0, value - 10),
+                    min(100, value + 10),
+                    min(100, value + 20)
+                ]
+
+            elif feature == "Completion":
+
+                values = [
+                    max(0, value - 20),
+                    max(0, value - 10),
+                    min(100, value + 10),
+                    min(100, value + 20)
+                ]
+
+            elif feature in [
+                "years_experience",
+                "project_count",
+                "github_activity"
+            ]:
+
+                values = [
+                    max(0, value - 2),
+                    max(0, value - 1),
+                    value + 1,
+                    value + 2
+                ]
+
+            elif feature == "resume_length":
+
+                values = [
+                    max(0, value - 100),
+                    max(0, value - 50),
+                    value + 50,
+                    value + 100
+                ]
+
+            elif feature == "Project_Cost":
+
+                values = [
+                    value * 0.8,
+                    value * 0.9,
+                    value * 1.1,
+                    value * 1.2
+                ]
+
+            elif feature == "Project_Benefit":
+
+                values = [
+                    value * 0.8,
+                    value * 0.9,
+                    value * 1.1,
+                    value * 1.2
+                ]
+
+            else:
+
+                values = [
+                    max(0, value - 2),
+                    max(0, value - 1),
+                    value + 1,
+                    value + 2
+                ]
+
+            for new_value in values:
+
+                if new_value == value:
+                    continue
+
+                candidates.append({
+                    "feature": feature,
+                    "old_value": value,
+                    "new_value": new_value,
+                    "changes": {
+                        feature: new_value
+                    }
                 })
 
         return candidates
 
-    def generate(self, original, desired_prediction=None):
+    def _make_candidates(
+        self,
+        data,
+        domain
+    ):
 
-        original_result = self.predict(original)
-        original_label = original_result["failure_type"]
+        if domain == "Student":
 
-        results = []
-
-        for candidate in self._candidates(original):
-
-            prediction = self.predict(candidate)
-
-            if desired_prediction:
-                valid = (
-                    prediction["failure_type"]
-                    == desired_prediction
-                )
-            else:
-                valid = (
-                    prediction["failure_type"]
-                    != original_label
-                )
-
-            if not valid:
-                continue
-
-            changes = {}
-
-            if candidate["Score"] != original["Score"]:
-                changes["Score"] = candidate["Score"]
-
-            if candidate["Severity"] != original["Severity"]:
-                changes["Severity"] = candidate["Severity"]
-
-            size = (
-                abs(candidate["Score"] - original["Score"])
-                + abs(
-                    candidate["Severity"]
-                    - original["Severity"]
-                )
+            return self._student_candidates(
+                data
             )
 
-            results.append({
-                "changes": changes,
-                "prediction": prediction["failure_type"],
-                "probability": prediction["probability"],
-                "change_size": size
+        return self._generic_candidates(
+            data,
+            domain
+        )
+
+    def generate(
+        self,
+        data,
+        desired_prediction=None
+    ):
+
+        original = self.predict(data)
+
+        domain = self.manager.normalize_domain(
+            data.get("Domain")
+        )
+
+        if desired_prediction is None:
+
+            probabilities = original.get(
+                "class_probabilities",
+                {}
+            )
+
+            alternatives = [
+                cls
+                for cls in probabilities
+                if cls != original[
+                    "failure_type"
+                ]
+            ]
+
+            if alternatives:
+
+                desired_prediction = max(
+                    alternatives,
+                    key=probabilities.get
+                )
+
+        candidates = self._make_candidates(
+            data,
+            domain
+        )
+
+        scenarios = []
+
+        for candidate in candidates:
+
+            new_data = dict(data)
+
+            new_data.update(
+                candidate["changes"]
+            )
+
+            result = self.predict(
+                new_data
+            )
+
+            successful = (
+                desired_prediction is not None
+                and result["failure_type"]
+                == desired_prediction
+            )
+
+            scenarios.append({
+                "feature":
+                    candidate["feature"],
+                "old_value":
+                    candidate["old_value"],
+                "new_value":
+                    candidate["new_value"],
+                "changes":
+                    candidate["changes"],
+                "prediction":
+                    result["failure_type"],
+                "probability":
+                    result["probability"],
+                "class_probabilities":
+                    result[
+                        "class_probabilities"
+                    ],
+                "successful":
+                    successful
             })
 
-        # Remove duplicate changes
-        unique = {
-            tuple(sorted(r["changes"].items())): r
-            for r in results
-        }
+        successful = [
+            item
+            for item in scenarios
+            if item["successful"]
+        ]
 
-        results = list(unique.values())
+        minimum = None
 
-        # Smallest intervention first
-        results.sort(
-            key=lambda x: (
-                x["change_size"],
-                -x["probability"]
+        if successful:
+
+            minimum = min(
+                successful,
+                key=self._change_size
             )
-        )
 
-        minimum = results[0] if results else None
+        highest = None
 
-        # Strongest predicted outcome
-        highest = (
-            max(
-                results,
-                key=lambda x: x["probability"]
+        if successful:
+
+            highest = max(
+                successful,
+                key=lambda item:
+                    item["probability"]
             )
-            if results else None
-        )
-
-        recommendations = []
-
-        if minimum:
-
-            if "Score" in minimum["changes"]:
-                recommendations.append(
-                    f"Increase score from "
-                    f"{original['Score']} toward "
-                    f"{minimum['changes']['Score']}"
-                )
-
-            if "Severity" in minimum["changes"]:
-                recommendations.append(
-                    f"Reduce severity from "
-                    f"{original['Severity']} toward "
-                    f"{minimum['changes']['Severity']}"
-                )
 
         return {
-            "original_input": original,
+            "original_input": data,
 
-            "original_prediction": {
-                "failure_type": original_label,
-                "probability":
-                    original_result["probability"]
-            },
+            "original_prediction":
+                original,
 
-            "counterfactuals": results[:10],
+            "desired_prediction":
+                desired_prediction,
 
-            "minimum_effective_change": minimum,
+            "counterfactuals":
+                scenarios,
 
-            "highest_confidence_scenario": highest,
+            "minimum_effective_change":
+                minimum,
 
-            "recommended_changes": recommendations
+            "highest_confidence_scenario":
+                highest,
+
+            "recommended_changes":
+                minimum["changes"]
+                if minimum
+                else {}
         }
+
+    def _change_size(self, item):
+
+        total = 0
+
+        for value in item[
+            "changes"
+        ].values():
+
+            try:
+                total += abs(
+                    float(value)
+                )
+            except (TypeError, ValueError):
+                total += 1
+
+        return total
