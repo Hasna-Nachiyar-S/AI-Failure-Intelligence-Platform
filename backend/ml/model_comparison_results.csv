@@ -1,0 +1,13 @@
+domain,experiment,accuracy,precision,recall,f1,balanced_accuracy,cv_f1_weighted,removed_features,model_path
+student,Original RF,0.8860759493670886,0.8916542994325621,0.8860759493670886,0.8875238808137911,0.8857039187227866,,,C:\Users\ELCOT\AI-Failure-Intelligence-Platform\backend\ml\models\student_original_rf.pkl
+student,Optimized RF,0.8860759493670886,0.8977303661358378,0.8860759493670886,0.8882527160111081,0.895500725689405,0.9310217599591256,,C:\Users\ELCOT\AI-Failure-Intelligence-Platform\backend\ml\models\student_optimized_rf.pkl
+student,Cleaned RF,0.8860759493670886,0.8916542994325621,0.8860759493670886,0.8875238808137911,0.8857039187227866,,,C:\Users\ELCOT\AI-Failure-Intelligence-Platform\backend\ml\models\student_cleaned_rf.pkl
+software,Original RF,0.768451519536903,0.7422691324768091,0.768451519536903,0.7497733492813999,0.410703891797452,,,C:\Users\ELCOT\AI-Failure-Intelligence-Platform\backend\ml\models\software_original_rf.pkl
+software,Optimized RF,0.7409551374819102,0.7526809044663189,0.7409551374819102,0.7429876430405394,0.4948696049520029,0.7264325093921071,,C:\Users\ELCOT\AI-Failure-Intelligence-Platform\backend\ml\models\software_optimized_rf.pkl
+software,Cleaned RF,0.7178002894356006,0.6755963452887022,0.7178002894356006,0.6820691080196376,0.38146517631660204,,"re, at",C:\Users\ELCOT\AI-Failure-Intelligence-Platform\backend\ml\models\software_cleaned_rf.pkl
+jobs,Original RF,0.8983333333333333,0.8974503489681264,0.8983333333333333,0.8977500946785663,0.8737248987065829,,,C:\Users\ELCOT\AI-Failure-Intelligence-Platform\backend\ml\models\jobs_original_rf.pkl
+jobs,Optimized RF,0.9031666666666667,0.9022712353915244,0.9031666666666667,0.9025365042233697,0.8787575967588218,0.9064006432900286,,C:\Users\ELCOT\AI-Failure-Intelligence-Platform\backend\ml\models\jobs_optimized_rf.pkl
+jobs,Cleaned RF,0.8983333333333333,0.8974503489681264,0.8983333333333333,0.8977500946785663,0.8737248987065829,,,C:\Users\ELCOT\AI-Failure-Intelligence-Platform\backend\ml\models\jobs_cleaned_rf.pkl
+projects,Original RF,0.6,0.575,0.6,0.5825396825396826,0.5166666666666666,,,C:\Users\ELCOT\AI-Failure-Intelligence-Platform\backend\ml\models\projects_original_rf.pkl
+projects,Optimized RF,0.6,0.6380952380952382,0.6,0.6096153846153847,0.5166666666666666,0.5439722222222223,,C:\Users\ELCOT\AI-Failure-Intelligence-Platform\backend\ml\models\projects_optimized_rf.pkl
+projects,Cleaned RF,0.6,0.575,0.6,0.5825396825396826,0.5166666666666666,,,C:\Users\ELCOT\AI-Failure-Intelligence-Platform\backend\ml\models\projects_cleaned_rf.pkl
