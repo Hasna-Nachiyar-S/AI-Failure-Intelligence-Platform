@@ -15,6 +15,10 @@ from pydantic import (
     Field
 )
 
+from backend.analytics.failure_profiles import (
+    FailureProfileAnalyzer
+)
+
 from backend.ml.domain_model_manager import (
     DomainModelManager
 )
@@ -30,6 +34,7 @@ from backend.counterfactual.generator import (
 from backend.what_if.simulator import (
     WhatIfSimulator
 )
+from backend.counterfactual.constraint_engine import DomainConstraintEngine
 
 
 app = FastAPI(
@@ -57,7 +62,11 @@ recommender = Recommender()
 counterfactual = CounterfactualGenerator()
 
 what_if = WhatIfSimulator()
+constraints = DomainConstraintEngine()
 
+profile_analyzer = FailureProfileAnalyzer(
+    n_clusters=3
+)
 
 class FailureInput(BaseModel):
 
@@ -185,6 +194,14 @@ def recommend(data: FailureInput):
         )
 
 
+@app.get("/constraints/{domain}")
+def get_constraints(domain: str):
+    try:
+        return constraints.describe(domain)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @app.post("/counterfactual")
 def generate_counterfactual(
     data: FailureInput
@@ -223,6 +240,43 @@ def simulate_what_if(
         return what_if.simulate(
             payload,
             changes
+        )
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+@app.get("/profiles/{domain}")
+def get_failure_profiles(domain: str):
+
+    try:
+
+        return profile_analyzer.get_profiles(
+            domain
+        )
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+
+@app.post("/profiles/{domain}/identify")
+def identify_failure_profile(
+    domain: str,
+    data: dict
+):
+
+    try:
+
+        return profile_analyzer.predict_profile(
+            domain,
+            data
         )
 
     except Exception as e:

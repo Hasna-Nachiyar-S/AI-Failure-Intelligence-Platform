@@ -1,14 +1,64 @@
+"""
+Domain-constrained counterfactual generator.
+
+The generator:
+1. Predicts the original case.
+2. Selects actionable features.
+3. Generates candidate values from the actual dataset.
+4. Applies domain constraints.
+5. Evaluates feasible interventions.
+6. Calculates model-predicted risk reduction.
+7. Separates successful counterfactuals from risk-only changes.
+8. Reports when no effective intervention is found.
+"""
+from backend.analytics.failure_profiles import (
+    FailureProfileAnalyzer
+)
+
+from backend.analytics.profile_guidance import (
+    ProfileGuidanceEngine
+)
+
 from backend.ml.domain_model_manager import (
     DomainModelManager
+)
+
+from backend.counterfactual.constraint_engine import (
+    DomainConstraintEngine
+)
+
+from backend.counterfactual.candidate_sampler import (
+    CandidateSampler
 )
 
 
 class CounterfactualGenerator:
 
     def __init__(self, model_dir="models"):
+
         self.manager = DomainModelManager(
             model_dir
         )
+
+        self.constraints = (
+            DomainConstraintEngine()
+        )
+
+        self.sampler = CandidateSampler()
+
+        self.profile_analyzer = (
+            FailureProfileAnalyzer(
+                n_clusters=3
+            )
+        )
+
+        self.profile_guidance = (
+            ProfileGuidanceEngine()
+        )
+
+    # =========================================================
+    # Prediction
+    # =========================================================
 
     def predict(self, data):
 
@@ -20,11 +70,15 @@ class CounterfactualGenerator:
         )
 
         return {
-            "domain": domain,
+            "domain":
+                domain,
+
             "failure_type":
                 result["failure_type"],
+
             "probability":
                 result["probability"],
+
             "class_probabilities":
                 result.get(
                     "class_probabilities",
@@ -32,317 +86,9 @@ class CounterfactualGenerator:
                 )
         }
 
-    def _student_candidates(self, data):
-
-        candidates = []
-
-        try:
-            g1 = float(data.get("G1"))
-            g2 = float(data.get("G2"))
-            absences = float(
-                data.get("absences")
-            )
-            failures = float(
-                data.get("failures")
-            )
-            studytime = float(
-                data.get("studytime")
-            )
-        except (TypeError, ValueError):
-            return candidates
-
-        # G1 changes
-
-        for value in [5, 7, 9, 11, 13, 15]:
-
-            if value != g1:
-
-                candidates.append({
-                    "feature": "G1",
-                    "old_value": g1,
-                    "new_value": value,
-                    "changes": {
-                        "G1": value
-                    }
-                })
-
-        # G2 changes
-
-        for value in [5, 7, 9, 11, 13, 15]:
-
-            if value != g2:
-
-                candidates.append({
-                    "feature": "G2",
-                    "old_value": g2,
-                    "new_value": value,
-                    "changes": {
-                        "G2": value
-                    }
-                })
-
-        # Absence changes
-
-        for value in [
-            0,
-            5,
-            10,
-            20,
-            30,
-            40,
-            50
-        ]:
-
-            if value != absences:
-
-                candidates.append({
-                    "feature": "absences",
-                    "old_value": absences,
-                    "new_value": value,
-                    "changes": {
-                        "absences": value
-                    }
-                })
-
-        # Previous failures
-
-        for value in [0, 1, 2, 3]:
-
-            if value != failures:
-
-                candidates.append({
-                    "feature": "failures",
-                    "old_value": failures,
-                    "new_value": value,
-                    "changes": {
-                        "failures": value
-                    }
-                })
-
-        # Study time
-
-        for value in [1, 2, 3, 4]:
-
-            if value != studytime:
-
-                candidates.append({
-                    "feature": "studytime",
-                    "old_value": studytime,
-                    "new_value": value,
-                    "changes": {
-                        "studytime": value
-                    }
-                })
-
-        # G1 + G2
-
-        for new_g1 in [5, 7, 9, 11]:
-
-            for new_g2 in [5, 7, 9, 11]:
-
-                if (
-                    new_g1 != g1
-                    or new_g2 != g2
-                ):
-
-                    candidates.append({
-                        "feature": "G1 + G2",
-                        "old_value":
-                            f"{g1}, {g2}",
-                        "new_value":
-                            f"{new_g1}, {new_g2}",
-                        "changes": {
-                            "G1": new_g1,
-                            "G2": new_g2
-                        }
-                    })
-
-        # G2 + absences
-
-        for new_g2 in [5, 7, 9, 11]:
-
-            for new_absences in [
-                20,
-                30,
-                40,
-                50
-            ]:
-
-                candidates.append({
-                    "feature":
-                        "G2 + absences",
-                    "old_value":
-                        f"{g2}, {absences}",
-                    "new_value":
-                        f"{new_g2}, "
-                        f"{new_absences}",
-                    "changes": {
-                        "G2": new_g2,
-                        "absences":
-                            new_absences
-                    }
-                })
-
-        # G1 + G2 + absences
-
-        for new_g1 in [5, 7, 9]:
-
-            for new_g2 in [5, 7, 9]:
-
-                for new_absences in [
-                    20,
-                    30,
-                    40
-                ]:
-
-                    candidates.append({
-                        "feature":
-                            "G1 + G2 + absences",
-                        "old_value":
-                            f"{g1}, {g2}, "
-                            f"{absences}",
-                        "new_value":
-                            f"{new_g1}, {new_g2}, "
-                            f"{new_absences}",
-                        "changes": {
-                            "G1": new_g1,
-                            "G2": new_g2,
-                            "absences":
-                                new_absences
-                        }
-                    })
-
-        return candidates
-
-    def _generic_candidates(
-        self,
-        data,
-        domain
-    ):
-
-        candidates = []
-
-        features = {
-            "Jobs": [
-                "years_experience",
-                "skills_match_score",
-                "project_count",
-                "resume_length",
-                "github_activity"
-            ],
-            "Projects": [
-                "Project_Cost",
-                "Project_Benefit",
-                "Completion",
-                "Year",
-                "Month"
-            ],
-            "Software": [
-                "cl",
-                "pd",
-                "co",
-                "rp",
-                "bs",
-                "bsr"
-            ]
-        }
-
-        for feature in features.get(
-            domain,
-            []
-        ):
-
-            value = data.get(feature)
-
-            try:
-                value = float(value)
-            except (TypeError, ValueError):
-                continue
-
-            values = []
-
-            if feature == "skills_match_score":
-
-                values = [
-                    max(0, value - 20),
-                    max(0, value - 10),
-                    min(100, value + 10),
-                    min(100, value + 20)
-                ]
-
-            elif feature == "Completion":
-
-                values = [
-                    max(0, value - 20),
-                    max(0, value - 10),
-                    min(100, value + 10),
-                    min(100, value + 20)
-                ]
-
-            elif feature in [
-                "years_experience",
-                "project_count",
-                "github_activity"
-            ]:
-
-                values = [
-                    max(0, value - 2),
-                    max(0, value - 1),
-                    value + 1,
-                    value + 2
-                ]
-
-            elif feature == "resume_length":
-
-                values = [
-                    max(0, value - 100),
-                    max(0, value - 50),
-                    value + 50,
-                    value + 100
-                ]
-
-            elif feature == "Project_Cost":
-
-                values = [
-                    value * 0.8,
-                    value * 0.9,
-                    value * 1.1,
-                    value * 1.2
-                ]
-
-            elif feature == "Project_Benefit":
-
-                values = [
-                    value * 0.8,
-                    value * 0.9,
-                    value * 1.1,
-                    value * 1.2
-                ]
-
-            else:
-
-                values = [
-                    max(0, value - 2),
-                    max(0, value - 1),
-                    value + 1,
-                    value + 2
-                ]
-
-            for new_value in values:
-
-                if new_value == value:
-                    continue
-
-                candidates.append({
-                    "feature": feature,
-                    "old_value": value,
-                    "new_value": new_value,
-                    "changes": {
-                        feature: new_value
-                    }
-                })
-
-        return candidates
+    # =========================================================
+    # Candidate generation
+    # =========================================================
 
     def _make_candidates(
         self,
@@ -350,16 +96,72 @@ class CounterfactualGenerator:
         domain
     ):
 
-        if domain == "Student":
+        candidates = []
 
-            return self._student_candidates(
-                data
+        actionable_features = (
+            self.constraints.actionable_features(
+                domain
+            )
+        )
+
+        for feature in actionable_features:
+
+            current_value = data.get(
+                feature
             )
 
-        return self._generic_candidates(
-            data,
-            domain
-        )
+            if current_value is None:
+                continue
+
+            candidate_values = (
+                self.sampler.get_candidates(
+                    domain,
+                    feature,
+                    current_value
+                )
+            )
+
+            for new_value in candidate_values:
+
+                if new_value == current_value:
+                    continue
+
+                # -------------------------------------------------
+                # Apply domain constraint validation
+                # -------------------------------------------------
+
+                valid, reason = (
+                    self.constraints.validate_change(
+                        domain,
+                        feature,
+                        new_value
+                    )
+                )
+
+                if not valid:
+                    continue
+
+                candidates.append({
+                    "feature":
+                        feature,
+
+                    "old_value":
+                        current_value,
+
+                    "new_value":
+                        new_value,
+
+                    "changes": {
+                        feature:
+                            new_value
+                    }
+                })
+
+        return candidates
+
+    # =========================================================
+    # Generate counterfactual analysis
+    # =========================================================
 
     def generate(
         self,
@@ -367,42 +169,128 @@ class CounterfactualGenerator:
         desired_prediction=None
     ):
 
-        original = self.predict(data)
+        # -----------------------------------------------------
+        # Original prediction
+        # -----------------------------------------------------
 
-        domain = self.manager.normalize_domain(
-            data.get("Domain")
+        original = self.predict(
+            data
         )
 
-        if desired_prediction is None:
+        domain = (
+            self.manager.normalize_domain(
+                data.get("Domain")
+            )
+        )
 
-            probabilities = original.get(
+        # ---------------------------------------------------------
+        # Identify historical failure profile
+        # ---------------------------------------------------------
+
+        profile_result = (
+            self.profile_analyzer.predict_profile(
+                domain,
+                data
+            )
+        )
+
+        assigned_profile = (
+            profile_result.get(
+                "profile"
+            )
+        )
+
+        profile_guidance = None
+
+        if assigned_profile:
+
+            profile_guidance = (
+                self.profile_guidance.generate_guidance(
+                    domain,
+                    data,
+                    assigned_profile
+                )
+            )
+
+        original_prediction = (
+            original["failure_type"]
+        )
+
+        original_probability = (
+            original["probability"]
+        )
+
+        original_probabilities = (
+            original.get(
                 "class_probabilities",
                 {}
             )
+        )
+
+        # -----------------------------------------------------
+        # Determine desired prediction
+        # -----------------------------------------------------
+
+        if desired_prediction is None:
 
             alternatives = [
                 cls
-                for cls in probabilities
-                if cls != original[
-                    "failure_type"
-                ]
+                for cls in original_probabilities
+                if cls != original_prediction
             ]
 
             if alternatives:
 
                 desired_prediction = max(
                     alternatives,
-                    key=probabilities.get
+                    key=original_probabilities.get
                 )
+
+        # -----------------------------------------------------
+        # Generate candidates
+        # -----------------------------------------------------
 
         candidates = self._make_candidates(
             data,
             domain
         )
 
-        scenarios = []
+        feasible_candidates = []
+        rejected_candidates = []
+
+        # -----------------------------------------------------
+        # Feasibility filtering
+        # -----------------------------------------------------
 
         for candidate in candidates:
+
+            valid, reasons = (
+                self.constraints.filter_changes(
+                    domain,
+                    candidate["changes"]
+                )
+            )
+
+            if valid:
+
+                feasible_candidates.append(
+                    candidate
+                )
+
+            else:
+
+                rejected_candidates.append({
+                    **candidate,
+                    "reasons": reasons
+                })
+
+        # -----------------------------------------------------
+        # Evaluate every feasible candidate
+        # -----------------------------------------------------
+
+        scenarios = []
+
+        for candidate in feasible_candidates:
 
             new_data = dict(data)
 
@@ -414,95 +302,427 @@ class CounterfactualGenerator:
                 new_data
             )
 
+            new_prediction = (
+                result["failure_type"]
+            )
+
+            new_probabilities = (
+                result.get(
+                    "class_probabilities",
+                    {}
+                )
+            )
+
+            # -------------------------------------------------
+            # Probability of original predicted class
+            # -------------------------------------------------
+
+            new_original_class_probability = (
+                new_probabilities.get(
+                    original_prediction,
+                    0.0
+                )
+            )
+
+            # -------------------------------------------------
+            # Model-predicted risk reduction
+            # -------------------------------------------------
+
+            risk_reduction = (
+                original_probability
+                - new_original_class_probability
+            )
+
+            # -------------------------------------------------
+            # Prediction transition
+            # -------------------------------------------------
+
+            prediction_transition = (
+                new_prediction
+                != original_prediction
+            )
+
+            # -------------------------------------------------
+            # Desired-class transition
+            # -------------------------------------------------
+
             successful = (
                 desired_prediction is not None
-                and result["failure_type"]
+                and new_prediction
                 == desired_prediction
             )
 
+            # -------------------------------------------------
+            # Beneficial intervention
+            #
+            # Positive risk reduction means the model predicts
+            # a lower probability for the original predicted
+            # class.
+            # -------------------------------------------------
+
+            beneficial = (
+                risk_reduction > 0.000001
+            )
+
             scenarios.append({
+
                 "feature":
                     candidate["feature"],
+
                 "old_value":
                     candidate["old_value"],
+
                 "new_value":
                     candidate["new_value"],
+
                 "changes":
                     candidate["changes"],
+
                 "prediction":
-                    result["failure_type"],
+                    new_prediction,
+
                 "probability":
                     result["probability"],
+
                 "class_probabilities":
-                    result[
-                        "class_probabilities"
-                    ],
+                    new_probabilities,
+
+                "original_class_probability":
+                    round(
+                        original_probability,
+                        6
+                    ),
+
+                "new_original_class_probability":
+                    round(
+                        new_original_class_probability,
+                        6
+                    ),
+
+                "risk_reduction":
+                    round(
+                        risk_reduction,
+                        6
+                    ),
+
+                "risk_reduction_percentage_points":
+                    round(
+                        risk_reduction * 100,
+                        4
+                    ),
+
+                "prediction_transition":
+                    prediction_transition,
+
                 "successful":
-                    successful
+                    successful,
+
+                "beneficial":
+                    beneficial
             })
 
-        successful = [
+        # =====================================================
+        # Separate result categories
+        # =====================================================
+
+        # Successful counterfactual:
+        # original class changes to desired class.
+        successful_counterfactuals = [
             item
             for item in scenarios
             if item["successful"]
         ]
 
-        minimum = None
+        # Beneficial but unsuccessful:
+        # risk decreases but prediction does not change
+        # to the desired class.
+        risk_reduction_only = [
+            item
+            for item in scenarios
+            if (
+                item["beneficial"]
+                and not item["successful"]
+            )
+        ]
 
-        if successful:
+        # Neutral or harmful:
+        # no reduction or increased original-class risk.
+        non_beneficial = [
+            item
+            for item in scenarios
+            if not item["beneficial"]
+        ]
 
-            minimum = min(
-                successful,
-                key=self._change_size
+        # =====================================================
+        # Ranking
+        # =====================================================
+
+        ranked_scenarios = sorted(
+            scenarios,
+            key=lambda item: (
+                item["risk_reduction"],
+                item["prediction_transition"]
+            ),
+            reverse=True
+        )
+
+        ranked_successful = sorted(
+            successful_counterfactuals,
+            key=lambda item: (
+                item["risk_reduction"]
+            ),
+            reverse=True
+        )
+
+        ranked_risk_reduction_only = sorted(
+            risk_reduction_only,
+            key=lambda item: (
+                item["risk_reduction"]
+            ),
+            reverse=True
+        )
+
+        # =====================================================
+        # Best successful counterfactual
+        # =====================================================
+
+        best_successful = None
+
+        if ranked_successful:
+
+            best_successful = (
+                ranked_successful[0]
             )
 
-        highest = None
+        # =====================================================
+        # Best risk-reduction-only intervention
+        # =====================================================
 
-        if successful:
+        best_risk_reduction_only = None
 
-            highest = max(
-                successful,
-                key=lambda item:
-                    item["probability"]
+        if ranked_risk_reduction_only:
+
+            best_risk_reduction_only = (
+                ranked_risk_reduction_only[0]
             )
+
+        # =====================================================
+        # Best overall intervention
+        # =====================================================
+
+        best_intervention = None
+
+        if ranked_scenarios:
+
+            best_intervention = (
+                ranked_scenarios[0]
+            )
+
+        # =====================================================
+        # Determine overall status
+        # =====================================================
+
+        if best_successful is not None:
+
+            analysis_status = (
+                "successful_counterfactual_found"
+            )
+
+            analysis_message = (
+                "A feasible counterfactual "
+                "intervention was identified that "
+                "changes the model prediction to "
+                "the desired outcome."
+            )
+
+        elif best_risk_reduction_only is not None:
+
+            analysis_status = (
+                "risk_reduction_without_transition"
+            )
+
+            analysis_message = (
+                "A feasible intervention was "
+                "identified that reduces the "
+                "model-predicted risk, but the "
+                "predicted outcome does not change."
+            )
+
+        else:
+
+            analysis_status = (
+                "no_beneficial_intervention_found"
+            )
+
+            analysis_message = (
+                "No feasible intervention produced "
+                "a positive reduction in the "
+                "model-predicted risk."
+            )
+
+        # =====================================================
+        # Recommended changes
+        # =====================================================
+
+        recommended_changes = {}
+
+        if best_successful is not None:
+
+            recommended_changes = (
+                best_successful["changes"]
+            )
+
+        elif best_risk_reduction_only is not None:
+
+            recommended_changes = (
+                best_risk_reduction_only["changes"]
+            )
+
+        # =====================================================
+        # Final result
+        # =====================================================
 
         return {
-            "original_input": data,
+
+            # -------------------------------------------------
+            # Input
+            # -------------------------------------------------
+
+            "original_input":
+                data,
+
+            # -------------------------------------------------
+            # Original prediction
+            # -------------------------------------------------
 
             "original_prediction":
                 original,
 
+            # -------------------------------------------------
+            # Desired prediction
+            # -------------------------------------------------
+
             "desired_prediction":
                 desired_prediction,
 
+            # -------------------------------------------------
+            # Candidate statistics
+            # -------------------------------------------------
+
+            "candidate_count":
+                len(candidates),
+
+            "feasible_candidate_count":
+                len(feasible_candidates),
+
+            "rejected_candidate_count":
+                len(rejected_candidates),
+
+            # -------------------------------------------------
+            # Result classification
+            # -------------------------------------------------
+
+            "analysis_status":
+                analysis_status,
+
+            "analysis_message":
+                analysis_message,
+
+            # -------------------------------------------------
+            # All scenarios
+            # -------------------------------------------------
+
             "counterfactuals":
-                scenarios,
+                ranked_scenarios,
 
-            "minimum_effective_change":
-                minimum,
+            # -------------------------------------------------
+            # Successful counterfactuals
+            # -------------------------------------------------
 
-            "highest_confidence_scenario":
-                highest,
+            "successful_counterfactuals":
+                ranked_successful,
+
+            "successful_counterfactual_count":
+                len(
+                    ranked_successful
+                ),
+
+            "best_successful_counterfactual":
+                best_successful,
+
+            # -------------------------------------------------
+            # Risk-reduction-only interventions
+            # -------------------------------------------------
+
+            "risk_reduction_only":
+                ranked_risk_reduction_only,
+
+            "risk_reduction_only_count":
+                len(
+                    ranked_risk_reduction_only
+                ),
+
+            "best_risk_reduction_only":
+                best_risk_reduction_only,
+
+            # -------------------------------------------------
+            # Non-beneficial interventions
+            # -------------------------------------------------
+
+            "non_beneficial_count":
+                len(
+                    non_beneficial
+                ),
+
+            # -------------------------------------------------
+            # Best overall
+            # -------------------------------------------------
+
+            "best_intervention":
+                best_intervention,
+
+            # -------------------------------------------------
+            # Recommended change
+            # -------------------------------------------------
 
             "recommended_changes":
-                minimum["changes"]
-                if minimum
-                else {}
-        }
+                recommended_changes,
 
-    def _change_size(self, item):
+            # -------------------------------------------------
+            # Backward compatibility
+            # -------------------------------------------------
 
-        total = 0
+            "minimum_effective_change":
+                best_successful,
 
-        for value in item[
-            "changes"
-        ].values():
+            "highest_risk_reduction":
+                best_intervention,
 
-            try:
-                total += abs(
-                    float(value)
+            # -------------------------------------------------
+            # Rejected candidates
+            # -------------------------------------------------
+
+            "rejected_candidates":
+                rejected_candidates,
+
+            "profile_analysis": profile_result,
+
+            "profile_guidance": profile_guidance,
+
+            # -------------------------------------------------
+            # Interpretation
+            # -------------------------------------------------
+
+            "interpretation":
+                (
+                    "Counterfactual results represent "
+                    "model-based scenario analysis. "
+                    "A positive predicted risk reduction "
+                    "does not establish a causal effect "
+                    "or guarantee real-world failure "
+                    "prevention. A successful counterfactual "
+                    "means that the tested input change "
+                    "caused the trained model's predicted "
+                    "class to change to the desired class."
                 )
-            except (TypeError, ValueError):
-                total += 1
-
-        return total
+        }
