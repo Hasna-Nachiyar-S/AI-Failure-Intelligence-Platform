@@ -69,8 +69,11 @@ changes the predicted outcome or predicted failure risk."
 The platform supports four domains:
 
 1. Student
+
 2. Software
+
 3. Jobs
+
 4. Projects
 
 ============================================================
@@ -82,34 +85,59 @@ The platform supports four domains:
 The platform combines:
 
 1. Domain-specific failure prediction
+
 2. Failure pattern identification
+
 3. Failure clustering
+
 4. Historical failure analysis
+
 5. Recommendation generation
+
 6. Counterfactual intervention analysis
+
 7. What-If simulation
+
 8. Preventive decision support
 
 The research-oriented extension is:
 
 Historical Failure Data
+
 ↓
+
 Domain-Specific Preprocessing
+
 ↓
+
 Failure Prediction
+
 ↓
+
 Failure Pattern / Profile Identification
+
 ↓
+
 Risk and Prediction Analysis
+
 ↓
+
 Domain Constraint Engine
+
 ↓
+
 Actionable Counterfactual Generation
+
 ↓
+
 What-If Simulation
+
 ↓
+
 Predicted Risk Reduction
+
 ↓
+
 Preventive Decision Support
 
 ============================================================
@@ -120,81 +148,55 @@ Preventive Decision Support
 
 Historical Failure Data
 
-```
-    ↓
-```
+↓
 
 Data Collection
 
-```
-    ↓
-```
+↓
 
 Data Standardization
 
-```
-    ↓
-```
+↓
 
 Domain-Specific Preprocessing
 
-```
-    ↓
-```
+↓
 
 Domain-Specific ML Models
 
-```
-    ↓
-```
+↓
 
 Domain Model Manager
 
-```
-    ↓
-```
+↓
 
 FastAPI Backend
 
-```
-    ↓
-```
+↓
 
 React Dashboard
 
-```
-    ↓
-```
+↓
 
 Prediction
 
-```
-    ↓
-```
+↓
 
 Failure Analytics / Clustering
 
-```
-    ↓
-```
+↓
 
 Recommendation
 
-```
-    ↓
-```
+↓
 
 Counterfactual Prevention
 
-```
-    ↓
-```
+↓
 
 What-If Simulation
 
-```
-    ↓
-```
+↓
 
 Preventive Decision Support
 
@@ -211,36 +213,26 @@ Current architecture:
 
 React Dashboard
 
-```
-    ↓
-```
+↓
 
 FastAPI
 
-```
-    ↓
-```
+↓
 
 DomainModelManager
 
-```
-    ↓
-```
+↓
 
 ┌────────────────┬────────────────┬────────────────┬────────────────┐
 │ Student │ Software │ Jobs │ Projects │
 │ RF Model │ RF Model │ RF Model │ RF Model │
 └────────────────┴────────────────┴────────────────┴────────────────┘
 
-```
-    ↓
-```
+↓
 
 Domain-Specific Prediction
 
-```
-    ↓
-```
+↓
 
 Recommendation / Counterfactual / What-If
 
@@ -589,15 +581,21 @@ Purpose:
 Supported domains:
 
 Student
+
 Software
+
 Jobs
+
 Projects
 
 The manager correctly loads:
 
 student_model.pkl
+
 software_model.pkl
+
 jobs_model.pkl
+
 projects_model.pkl
 
 Testing confirmed that the correct feature lists are loaded
@@ -616,23 +614,31 @@ Weak Student Example:
 Domain = Student
 
 absences = 30
+
 studytime = 1
+
 failures = 3
+
 G1 = 7
+
 G2 = 6
 
 Prediction:
 
 Exam Failure
 
-Probability:
+Earlier API probability:
 
-95.5%
+Approximately 95.5%
 
-Class probabilities:
+Latest research-engine probability:
 
-Exam Failure = 95.5%
-Passed = 4.5%
+Exam Failure = 95.73%
+
+Passed = approximately 4.27%
+
+The slight difference reflects the use of the optimized research
+model in the new counterfactual experiment.
 
 ---
 
@@ -641,26 +647,25 @@ Strong Student Example:
 Domain = Student
 
 absences = 2
+
 studytime = 4
+
 failures = 0
+
 G1 = 18
+
 G2 = 18
 
 Prediction:
 
 Passed
 
-Probability:
+Earlier API probability:
 
-99.5%
+Approximately 99.5%
 
-Class probabilities:
-
-Exam Failure = 0.5%
-Passed = 99.5%
-
-This confirmed that actual domain-specific inputs affect
-the ML prediction.
+The production prediction pipeline has been confirmed to respond
+correctly to domain-specific student inputs.
 
 ============================================================
 
@@ -806,7 +811,9 @@ SUCCESSFUL
 Files:
 
 backend/recommendation/recommender.py
+
 backend/recommendation/rules.py
+
 backend/recommendation/templates.py
 
 The recommendation system has been adapted to work with the
@@ -858,9 +865,13 @@ different outcome.
 The system evaluates:
 
 1. Original prediction
+
 2. Alternative scenarios
+
 3. Minimum effective change
+
 4. Highest-confidence scenario
+
 5. Recommended changes
 
 ---
@@ -872,9 +883,13 @@ Original input:
 Domain = Student
 
 absences = 2
+
 studytime = 4
+
 failures = 0
+
 G1 = 18
+
 G2 = 18
 
 Original prediction:
@@ -883,7 +898,7 @@ Passed
 
 Original probability:
 
-99.50%
+Approximately 99.50%
 
 Target prediction:
 
@@ -901,9 +916,9 @@ New prediction:
 
 Exam Failure
 
-Probability:
+Earlier recorded probability:
 
-78.40%
+Approximately 78.40%
 
 Highest-confidence scenario:
 
@@ -912,16 +927,18 @@ G1 + G2 + absences
 Change:
 
 G1 = 5
+
 G2 = 5
+
 absences = 20
 
 Prediction:
 
 Exam Failure
 
-Probability:
+Earlier recorded probability:
 
-98.50%
+Approximately 98.50%
 
 Status:
 
@@ -956,10 +973,15 @@ observe the model's new prediction.
 The simulator:
 
 1. Takes original input.
+
 2. Generates original prediction.
+
 3. Applies user-selected changes.
+
 4. Generates new prediction.
+
 5. Compares probabilities.
+
 6. Determines whether the predicted class changed.
 
 ---
@@ -981,9 +1003,13 @@ What-If data:
 Domain = Student
 
 G1 = 18
+
 G2 = 18
+
 absences = 2
+
 failures = 0
+
 studytime = 4
 
 What-If changes:
@@ -1166,7 +1192,9 @@ AI-Failure-Intelligence-Platform/
 │ │ ├── evaluator.py
 │ │ ├── trainer.py
 │ │ ├── domain_trainer.py
-│ │ └── domain_model_manager.py
+│ │ ├── domain_model_manager.py
+│ │ ├── counterfactual_engine.py
+│ │ └── test_counterfactual.py
 │ │
 │ ├── services/
 │ │ └── preprocessing.py
@@ -1223,6 +1251,19 @@ AI-Failure-Intelligence-Platform/
 ├── README.md
 └── requirements.txt
 
+Additional research model files:
+
+backend/ml/models/
+
+├── student_cleaned_rf.pkl
+├── student_optimized_rf.pkl
+├── student_original_rf.pkl
+└── other controlled experimental models
+
+Research experiment output:
+
+backend/ml/model_comparison_results.csv
+
 ============================================================
 
 23. BACKUP FILES
@@ -1277,15 +1318,26 @@ DO NOT DELETE FILES RANDOMLY.
 The next cleanup task is:
 
 1. Identify all Python files.
+
 2. Check imports and references.
+
 3. Identify files still used by the current API.
-4. Identify obsolete model files.
-5. Identify obsolete scripts.
-6. Identify duplicate backup files.
-7. Remove only files confirmed to be unnecessary.
-8. Run backend tests again.
-9. Run frontend tests again.
-10. Confirm the application still works.
+
+4. Identify files used indirectly.
+
+5. Identify obsolete model files.
+
+6. Identify obsolete scripts.
+
+7. Identify duplicate backup files.
+
+8. Remove only files confirmed to be unnecessary.
+
+9. Run backend tests again.
+
+10. Run frontend tests again.
+
+11. Confirm the application still works.
 
 ============================================================
 
@@ -1296,17 +1348,23 @@ The next cleanup task is:
 The following files belong to the older architecture:
 
 models/best_classifier.pkl
+
 models/kmeans.pkl
+
 models/scaler.pkl
+
 models/encoders.pkl
 
 They should NOT be deleted immediately.
 
-The current domain-specific models are:
+The current production domain-specific models are:
 
 models/student_model.pkl
+
 models/software_model.pkl
+
 models/jobs_model.pkl
+
 models/projects_model.pkl
 
 The old models should first be checked for remaining usage.
@@ -1332,7 +1390,9 @@ backend/ml/model_comparison_results.csv
 Three experiments were performed:
 
 1. Original Random Forest
+
 2. Optimized Random Forest
+
 3. Cleaned Random Forest
 
 The purpose was to determine whether Random Forest
@@ -1355,17 +1415,25 @@ novel algorithm.
 Original RF:
 
 Accuracy = 0.8861
+
 Precision = 0.8917
+
 Recall = 0.8861
+
 F1 = 0.8875
+
 Balanced Accuracy = 0.8857
 
 Optimized RF:
 
 Accuracy = 0.8861
+
 Precision = 0.8977
+
 Recall = 0.8861
+
 F1 = 0.8883
+
 Balanced Accuracy = 0.8955
 
 CV Weighted F1:
@@ -1375,18 +1443,27 @@ CV Weighted F1:
 Best parameters:
 
 n_estimators = 200
+
 min_samples_split = 5
+
 min_samples_leaf = 4
+
 max_features = sqrt
+
 max_depth = 5
+
 class_weight = None
 
 Cleaned RF:
 
 Accuracy = 0.8861
+
 Precision = 0.8917
+
 Recall = 0.8861
+
 F1 = 0.8875
+
 Balanced Accuracy = 0.8857
 
 Interpretation:
@@ -1405,17 +1482,25 @@ Student → Optimized RF can be used as the stronger baseline.
 Original RF:
 
 Accuracy = 0.7685
+
 Precision = 0.7423
+
 Recall = 0.7685
+
 F1 = 0.7498
+
 Balanced Accuracy = 0.4107
 
 Optimized RF:
 
 Accuracy = 0.7410
+
 Precision = 0.7527
+
 Recall = 0.7410
+
 F1 = 0.7430
+
 Balanced Accuracy = 0.4949
 
 CV Weighted F1:
@@ -1425,18 +1510,27 @@ CV Weighted F1:
 Best parameters:
 
 n_estimators = 300
+
 min_samples_split = 5
+
 min_samples_leaf = 1
+
 max_features = sqrt
+
 max_depth = 20
+
 class_weight = balanced_subsample
 
 Cleaned RF:
 
 Accuracy = 0.7178
+
 Precision = 0.6756
+
 Recall = 0.7178
+
 F1 = 0.6821
+
 Balanced Accuracy = 0.3815
 
 Interpretation:
@@ -1466,17 +1560,25 @@ accuracy alone.
 Original RF:
 
 Accuracy = 0.8983
+
 Precision = 0.8975
+
 Recall = 0.8983
+
 F1 = 0.8978
+
 Balanced Accuracy = 0.8737
 
 Optimized RF:
 
 Accuracy = 0.9032
+
 Precision = 0.9023
+
 Recall = 0.9032
+
 F1 = 0.9025
+
 Balanced Accuracy = 0.8788
 
 CV Weighted F1:
@@ -1486,18 +1588,27 @@ CV Weighted F1:
 Best parameters:
 
 n_estimators = 200
+
 min_samples_split = 5
+
 min_samples_leaf = 4
+
 max_features = log2
+
 max_depth = None
+
 class_weight = None
 
 Cleaned RF:
 
 Accuracy = 0.8983
+
 Precision = 0.8975
+
 Recall = 0.8983
+
 F1 = 0.8978
+
 Balanced Accuracy = 0.8737
 
 Interpretation:
@@ -1515,17 +1626,25 @@ Jobs → Optimized RF is currently the stronger baseline.
 Original RF:
 
 Accuracy = 0.6000
+
 Precision = 0.5750
+
 Recall = 0.6000
+
 F1 = 0.5825
+
 Balanced Accuracy = 0.5167
 
 Optimized RF:
 
 Accuracy = 0.6000
+
 Precision = 0.6381
+
 Recall = 0.6000
+
 F1 = 0.6096
+
 Balanced Accuracy = 0.5167
 
 CV Weighted F1:
@@ -1535,18 +1654,27 @@ CV Weighted F1:
 Best parameters:
 
 n_estimators = 300
+
 min_samples_split = 2
+
 min_samples_leaf = 2
+
 max_features = log2
+
 max_depth = 5
+
 class_weight = balanced_subsample
 
 Cleaned RF:
 
 Accuracy = 0.6000
+
 Precision = 0.5750
+
 Recall = 0.6000
+
 F1 = 0.5825
+
 Balanced Accuracy = 0.5167
 
 Interpretation:
@@ -1571,47 +1699,59 @@ considered before making strong claims.
 Domain | Experiment | Accuracy | Precision | Recall | F1 | Balanced Accuracy | CV Weighted F1
 
 Student | Original RF | 0.8861 | 0.8917 | 0.8861 | 0.8875 | 0.8857 | -
+
 Student | Optimized RF | 0.8861 | 0.8977 | 0.8861 | 0.8883 | 0.8955 | 0.9310
+
 Student | Cleaned RF | 0.8861 | 0.8917 | 0.8861 | 0.8875 | 0.8857 | -
 
 Software | Original RF | 0.7685 | 0.7423 | 0.7685 | 0.7498 | 0.4107 | -
+
 Software | Optimized RF | 0.7410 | 0.7527 | 0.7410 | 0.7430 | 0.4949 | 0.7264
+
 Software | Cleaned RF | 0.7178 | 0.6756 | 0.7178 | 0.6821 | 0.3815 | -
 
 Jobs | Original RF | 0.8983 | 0.8975 | 0.8983 | 0.8978 | 0.8737 | -
+
 Jobs | Optimized RF | 0.9032 | 0.9023 | 0.9032 | 0.9025 | 0.8788 | 0.9064
+
 Jobs | Cleaned RF | 0.8983 | 0.8975 | 0.8983 | 0.8978 | 0.8737 | -
 
 Projects | Original RF | 0.6000 | 0.5750 | 0.6000 | 0.5825 | 0.5167 | -
+
 Projects | Optimized RF | 0.6000 | 0.6381 | 0.6000 | 0.6096 | 0.5167 | 0.5440
+
 Projects | Cleaned RF | 0.6000 | 0.5750 | 0.6000 | 0.5825 | 0.5167 | -
 
 ============================================================
 
-28. CURRENT BEST BASELINES
+28. CURRENT BASELINE MODEL SELECTION
 
 ============================================================
 
-Current best model by weighted test F1:
+Current domain-specific baseline selection:
 
 Student:
 
 Optimized RF
+
 F1 = 0.8883
 
 Software:
 
 Original RF
+
 F1 = 0.7498
 
 Jobs:
 
 Optimized RF
+
 F1 = 0.9025
 
 Projects:
 
 Optimized RF
+
 F1 = 0.6096
 
 Important:
@@ -1766,83 +1906,57 @@ a final novelty claim in the paper.
 
 Heterogeneous Failure Data
 
-```
-    ↓
-```
+↓
 
 Data Preprocessing
 
-```
-    ↓
-```
+↓
 
 Domain-Specific Prediction
 
-```
-    ↓
-```
+↓
 
 Failure Pattern Mining
 
 (K-Means / Failure Profiles)
 
-```
-    ↓
-```
+↓
 
 Failure Profile Identification
 
-```
-    ↓
-```
+↓
 
 Risk / Prediction Explanation
 
-```
-    ↓
-```
+↓
 
 Domain Constraint Engine
 
-```
-    ↓
-```
+↓
 
 Actionable Feature Selection
 
-```
-    ↓
-```
+↓
 
 Candidate Counterfactual Generation
 
-```
-    ↓
-```
+↓
 
 Feasibility Filtering
 
-```
-    ↓
-```
+↓
 
 Profile-Guided Intervention Ranking
 
-```
-    ↓
-```
+↓
 
 What-If Simulation
 
-```
-    ↓
-```
+↓
 
 Predicted Risk Reduction
 
-```
-    ↓
-```
+↓
 
 Preventive Decision Support
 
@@ -1957,42 +2071,33 @@ Example conceptual process:
 
 Historical failures
 
-```
-    ↓
-```
+↓
 
 K-Means
 
-```
-    ↓
-```
+↓
 
 Failure Profile 1
+
 Failure Profile 2
+
 Failure Profile 3
+
 ...
 
-```
-    ↓
-```
+↓
 
 Profile characteristics
 
-```
-    ↓
-```
+↓
 
 Identify common actionable characteristics
 
-```
-    ↓
-```
+↓
 
 Generate feasible interventions
 
-```
-    ↓
-```
+↓
 
 Evaluate predicted risk reduction
 
@@ -2126,29 +2231,32 @@ Potential evaluation:
 - Predicted risk reduction
 - Prediction transition rate
 
-This is more research-worthy than simply comparing
-Random Forest accuracy.
+============================================================
+
+37. RESEARCH COUNTERFACTUAL ENGINE
 
 ============================================================
 
-37. COUNTERFACTUAL ENGINE DEVELOPMENT STATUS
+STATUS:
 
-============================================================
+BASELINE IMPLEMENTATION CREATED AND FUNCTIONALLY TESTED
 
-A baseline counterfactual engine design has been defined.
-
-Planned file:
+File:
 
 backend/ml/counterfactual_engine.py
+
+Test file:
+
+backend/ml/test_counterfactual.py
 
 Purpose:
 
 Provide a research-oriented baseline for generating
 domain-constrained counterfactual interventions.
 
-Planned components:
+The baseline engine currently contains:
 
-Intervention
+Intervention:
 
 - feature
 - old_value
@@ -2156,42 +2264,489 @@ Intervention
 - risk_before
 - risk_after
 - risk_reduction
+- prediction_before
+- prediction_after
 
-CounterfactualResult
+CounterfactualResult:
 
 - original_prediction
 - original_failure_risk
 - recommended_interventions
 - best_intervention
 
-Domain constraints:
+Domain configuration currently includes:
 
-Student
-Jobs
-Software
-Projects
+Student:
 
-The baseline engine should:
+Actionable features:
 
-1. Accept a fitted model.
-2. Accept training data.
-3. Identify actionable features.
-4. Generate candidate feature values.
-5. Predict candidate outcomes.
-6. Calculate risk reduction.
-7. Rank interventions.
-8. Return the best feasible intervention.
+- absences
+- studytime
 
-IMPORTANT:
+Jobs:
+
+Actionable features:
+
+- skills_match_score
+- project_count
+- resume_length
+- github_activity
+
+Software:
+
+Actionable features:
+
+- pr
+- cl
+- rp
+- os
+- bs
+- bsr
+
+Projects:
+
+Actionable features:
+
+- Complexity
+- Project_Cost
+- Project_Benefit
+- Completion
+- Phase
+
+The baseline engine currently:
+
+1. Accepts a fitted model.
+
+2. Accepts an input feature dictionary.
+
+3. Identifies actionable features.
+
+4. Generates candidate feature values.
+
+5. Predicts candidate outcomes.
+
+6. Calculates model-based failure risk.
+
+7. Calculates predicted risk reduction.
+
+8. Ranks candidate interventions.
+
+9. Returns the highest predicted risk-reduction intervention.
+
+Important:
+
+The saved optimized Random Forest models are stored as model
+bundles.
+
+Example:
+
+backend/ml/models/student_optimized_rf.pkl
+
+The bundle contains:
+
+- model
+- domain
+- experiment
+- features
+- metrics
+- best_params
+- random_state
+
+The actual trained model is extracted using:
+
+model_bundle["model"]
+
+The trained object is a scikit-learn Pipeline.
+
+The counterfactual engine therefore converts each feature
+dictionary into a pandas DataFrame before prediction.
+
+This was required because the preprocessing pipeline expects
+2D tabular input with feature columns.
+
+The baseline engine is now successfully executing.
+
+Important:
 
 This baseline implementation is NOT yet the final proposed
 research method.
 
-Profile-guided intervention generation still needs to be added.
+It currently uses predefined candidate values and does not yet
+use training-data-derived quantiles.
+
+It also does not yet implement profile-guided intervention
+generation.
 
 ============================================================
 
-38. CURRENT RESEARCH STATUS
+38. STUDENT COUNTERFACTUAL BASELINE VALIDATION
+
+============================================================
+
+STATUS:
+
+SUCCESSFUL
+
+Test file:
+
+backend/ml/test_counterfactual.py
+
+Execution command:
+
+python -m backend.ml.test_counterfactual
+
+Model used:
+
+backend/ml/models/student_optimized_rf.pkl
+
+Model:
+
+Optimized Random Forest
+
+Experiment:
+
+Optimized Random Forest
+
+Model object:
+
+scikit-learn Pipeline
+
+Test case:
+
+absences = 30
+
+studytime = 1
+
+failures = 3
+
+G1 = 7
+
+G2 = 6
+
+Original prediction:
+
+Exam Failure
+
+Original failure risk:
+
+0.9573
+
+Approximately:
+
+95.73%
+
+Actionable features tested:
+
+- absences
+- studytime
+
+Total candidate interventions tested:
+
+7
+
+Best model-based risk-reduction intervention:
+
+Feature:
+
+studytime
+
+Old value:
+
+1
+
+New value:
+
+3
+
+Prediction before:
+
+Exam Failure
+
+Prediction after:
+
+Exam Failure
+
+Risk before:
+
+0.9573
+
+Risk after:
+
+0.9560
+
+Predicted risk reduction:
+
+0.0013
+
+Approximately:
+
+0.13 percentage points
+
+Other tested interventions included negative predicted
+risk reductions.
+
+For example:
+
+absences:
+
+30 → 0
+
+Predicted risk reduction:
+
+-0.0153
+
+This means the trained model predicted a higher failure risk
+for that counterfactual scenario.
+
+Important interpretation:
+
+The engine does NOT force a successful intervention.
+
+For the tested high-risk Student case, none of the tested
+actionable interventions changed the prediction from:
+
+Exam Failure
+
+to:
+
+Passed
+
+Therefore, the baseline experiment correctly reports a small
+positive model-predicted risk reduction without claiming that
+the intervention successfully prevents failure.
+
+This is an important baseline result.
+
+It demonstrates that the research engine can evaluate
+candidate interventions even when no successful class-transition
+counterfactual exists.
+
+Important:
+
+The result is model-based.
+
+It does NOT establish that increasing studytime from 1 to 3
+would actually prevent exam failure.
+
+============================================================
+
+39. CURRENT RESEARCH COUNTERFACTUAL STATUS
+
+============================================================
+
+Completed:
+
+[✓] Research counterfactual engine file created
+
+[✓] Research counterfactual test file created
+
+[✓] Correct model path identified
+
+[✓] Saved model bundle structure verified
+
+[✓] Actual trained Pipeline extracted from model bundle
+
+[✓] DataFrame-based pipeline input implemented
+
+[✓] Student baseline counterfactual execution completed
+
+[✓] Original predicted failure risk calculated
+
+[✓] Candidate interventions generated
+
+[✓] Risk-before / risk-after calculated
+
+[✓] Predicted risk reduction calculated
+
+[✓] Interventions ranked by predicted risk reduction
+
+Pending:
+
+[ ] Successful class-transition filtering
+
+[ ] Separate risk-reduction and class-transition reporting
+
+[ ] Training-data-derived candidate values
+
+[ ] Stronger domain feasibility constraints
+
+[ ] Multi-feature counterfactual generation
+
+[ ] Student systematic validation
+
+[ ] Four-domain counterfactual evaluation
+
+[ ] Profile-guided intervention generation
+
+============================================================
+
+40. IMPORTANT BASELINE COUNTERFACTUAL OBSERVATION
+
+============================================================
+
+The first research-oriented counterfactual experiment produced
+the following Student result:
+
+Original prediction:
+
+Exam Failure
+
+Original failure risk:
+
+0.9573
+
+Best tested intervention:
+
+studytime:
+
+1 → 3
+
+New prediction:
+
+Exam Failure
+
+New predicted failure risk:
+
+0.9560
+
+Predicted risk reduction:
+
+0.0013
+
+Therefore:
+
+The current baseline engine found a small positive change in
+predicted failure risk but did not produce a successful
+prediction transition.
+
+This should NOT be treated as a failure of the research idea.
+
+It establishes a useful baseline condition:
+
+A counterfactual method should be able to report when no tested
+actionable intervention successfully changes the predicted class.
+
+The future proposed method should be evaluated against this
+baseline rather than forcing every case to produce a successful
+intervention.
+
+============================================================
+
+41. IMPORTANT METHODOLOGICAL IMPROVEMENTS IDENTIFIED
+
+============================================================
+
+The first baseline test revealed several improvements needed
+for the research implementation.
+
+1. Separate risk reduction from class transition.
+
+A candidate may reduce predicted failure risk while still
+remaining in the failure class.
+
+Therefore, future evaluation should separately report:
+
+- predicted risk reduction
+- prediction transition
+
+2. Distinguish effective and ineffective interventions.
+
+Positive risk reduction:
+
+risk_reduction > 0
+
+Non-positive risk reduction:
+
+risk_reduction <= 0
+
+3. Report when no successful counterfactual exists.
+
+The system should explicitly allow:
+
+"No successful counterfactual found."
+
+4. Use training-data-derived candidate values.
+
+The current baseline uses predefined candidate ranges.
+
+The stronger research implementation should derive realistic
+candidate values from the training distribution.
+
+5. Strengthen domain constraints.
+
+Actionability must be defined according to the prediction
+timepoint and validated for each domain.
+
+6. Add multi-feature counterfactuals.
+
+The baseline currently evaluates single-feature interventions.
+
+The proposed method should later evaluate sparse combinations
+of actionable features.
+
+7. Add failure-profile guidance.
+
+K-Means failure profiles should eventually guide which
+interventions are considered or prioritized.
+
+============================================================
+
+42. IMPORTANT RESEARCH CLAIMS TO AVOID
+
+============================================================
+
+DO NOT CLAIM:
+
+"Random Forest optimization is our novel algorithm."
+
+DO NOT CLAIM:
+
+"K-Means + Random Forest is automatically novel."
+
+DO NOT CLAIM:
+
+"Counterfactual explanations are novel."
+
+DO NOT CLAIM:
+
+"Changing the feature will definitely prevent failure."
+
+DO NOT CLAIM:
+
+"The system proves causation."
+
+DO NOT CLAIM:
+
+"The model identifies the true cause of failure."
+
+DO NOT CLAIM:
+
+"High accuracy means the intervention will work in reality."
+
+DO NOT CLAIM:
+
+"A positive predicted risk reduction proves that the real-world
+intervention is effective."
+
+Instead use:
+
+"The model predicts..."
+
+"The model estimates..."
+
+"According to the trained model..."
+
+"Predicted failure-risk reduction..."
+
+"Model-based counterfactual..."
+
+"Feasibility-constrained intervention..."
+
+"Model-predicted change..."
+
+============================================================
+
+43. CURRENT RESEARCH STATUS
 
 ============================================================
 
@@ -2229,6 +2784,14 @@ COMPLETED:
 
 [✓] Initial proposed research framework
 
+[✓] Research counterfactual engine baseline
+
+[✓] Research counterfactual test
+
+[✓] Student counterfactual baseline validation
+
+[✓] Predicted risk-reduction calculation
+
 PENDING:
 
 [ ] Safe architecture audit
@@ -2237,11 +2800,13 @@ PENDING:
 
 [ ] Full four-domain end-to-end testing
 
-[ ] Research-oriented counterfactual engine
+[ ] Training-data-derived counterfactual ranges
 
-[ ] Student counterfactual validation
+[ ] Stronger domain constraints
 
-[ ] Risk-reduction measurement
+[ ] Systematic Student counterfactual validation
+
+[ ] Four-domain counterfactual evaluation
 
 [ ] K-Means failure profile analysis
 
@@ -2269,7 +2834,7 @@ PENDING:
 
 ============================================================
 
-39. IMPORTANT ARCHITECTURE CLEANUP PLAN
+44. IMPORTANT ARCHITECTURE CLEANUP PLAN
 
 ============================================================
 
@@ -2320,7 +2885,7 @@ Confirm their usage first.
 
 ============================================================
 
-40. FULL FOUR-DOMAIN TESTING PLAN
+45. FULL FOUR-DOMAIN TESTING PLAN
 
 ============================================================
 
@@ -2368,7 +2933,7 @@ Testing should include:
 
 ============================================================
 
-41. RESEARCH METRIC IMPROVEMENT
+46. RESEARCH METRIC IMPROVEMENT
 
 ============================================================
 
@@ -2400,9 +2965,22 @@ class performance.
 Projects requires careful uncertainty reporting because of the
 very small dataset.
 
+For the counterfactual research component, additionally report:
+
+- Average predicted risk reduction
+- Median predicted risk reduction
+- Intervention success rate
+- Prediction transition rate
+- Counterfactual validity
+- Actionability rate
+- Feasibility rate
+- Number of feature changes
+- Intervention magnitude
+- Sparsity
+
 ============================================================
 
-42. IMPORTANT DATASET RISKS
+47. IMPORTANT DATASET RISKS
 
 ============================================================
 
@@ -2459,55 +3037,7 @@ Repeated cross-validation or additional data should be considered.
 
 ============================================================
 
-43. IMPORTANT RESEARCH CLAIMS TO AVOID
-
-============================================================
-
-DO NOT CLAIM:
-
-"Random Forest optimization is our novel algorithm."
-
-DO NOT CLAIM:
-
-"K-Means + Random Forest is automatically novel."
-
-DO NOT CLAIM:
-
-"Counterfactual explanations are novel."
-
-DO NOT CLAIM:
-
-"Changing the feature will definitely prevent failure."
-
-DO NOT CLAIM:
-
-"The system proves causation."
-
-DO NOT CLAIM:
-
-"The model identifies the true cause of failure."
-
-DO NOT CLAIM:
-
-"High accuracy means the intervention will work in reality."
-
-Instead use:
-
-"The model predicts..."
-
-"The model estimates..."
-
-"According to the trained model..."
-
-"Predicted failure-risk reduction..."
-
-"Model-based counterfactual..."
-
-"Feasibility-constrained intervention..."
-
-============================================================
-
-44. CURRENT PROJECT DEVELOPMENT RULES
+48. CURRENT DEVELOPMENT RULES
 
 ============================================================
 
@@ -2541,9 +3071,19 @@ Instead use:
 
 15. Validate domain constraints before using them in the paper.
 
+16. Do not force counterfactual methods to produce successful
+    interventions when the model does not support one.
+
+17. Distinguish predicted risk reduction from prediction
+    class transition.
+
+18. Preserve reproducibility by recording model version,
+    experiment, candidate generation method, and evaluation
+    metrics.
+
 ============================================================
 
-45. CURRENT DEVELOPMENT COMMANDS
+49. CURRENT DEVELOPMENT COMMANDS
 
 ============================================================
 
@@ -2571,6 +3111,10 @@ Frontend:
 
 http://localhost:5173/
 
+Research counterfactual test:
+
+python -m backend.ml.test_counterfactual
+
 Node version confirmed:
 
 v24.14.1
@@ -2581,7 +3125,7 @@ npm version confirmed:
 
 ============================================================
 
-46. CURRENT TESTING STATUS
+50. CURRENT TESTING STATUS
 
 ============================================================
 
@@ -2645,15 +3189,25 @@ Research:
 
 [✓] Baseline comparison
 
-[ ] Proposed intervention method
+[✓] Research counterfactual engine baseline
+
+[✓] Student counterfactual baseline test
+
+[✓] Predicted risk-reduction calculation
+
+[ ] Four-domain research counterfactual evaluation
+
+[ ] Proposed profile-guided intervention method
 
 [ ] Intervention evaluation
 
 [ ] Literature validation
 
+[ ] Final novelty validation
+
 ============================================================
 
-47. CURRENT PROJECT STATUS
+51. CURRENT PROJECT STATUS
 
 ============================================================
 
@@ -2717,6 +3271,18 @@ BASELINE MODEL:
 
 ESTABLISHED ✓
 
+RESEARCH COUNTERFACTUAL ENGINE:
+
+BASELINE WORKING ✓
+
+STUDENT COUNTERFACTUAL VALIDATION:
+
+BASELINE COMPLETED ✓
+
+PREDICTED RISK REDUCTION:
+
+BASELINE CALCULATION WORKING ✓
+
 SAFE ARCHITECTURE AUDIT:
 
 PENDING
@@ -2725,7 +3291,11 @@ FULL FOUR-DOMAIN TESTING:
 
 PENDING
 
-RESEARCH COUNTERFACTUAL ENGINE:
+TRAINING-DATA-DERIVED COUNTERFACTUALS:
+
+PENDING
+
+STRONGER DOMAIN CONSTRAINTS:
 
 PENDING
 
@@ -2771,7 +3341,7 @@ PENDING
 
 ============================================================
 
-48. NEXT DEVELOPMENT PHASE
+52. NEXT DEVELOPMENT PHASE
 
 ============================================================
 
@@ -2779,113 +3349,85 @@ PHASE 1:
 
 SAFE ARCHITECTURE AUDIT
 
-```
-    ↓
-```
+↓
 
 PHASE 2:
 
 FULL FOUR-DOMAIN END-TO-END TESTING
 
-```
-    ↓
-```
+↓
 
 PHASE 3:
 
-RESEARCH-ORIENTED COUNTERFACTUAL ENGINE
+RESEARCH-ORIENTED COUNTERFACTUAL ENGINE REFINEMENT
 
-```
-    ↓
-```
+↓
 
 PHASE 4:
 
 STUDENT COUNTERFACTUAL VALIDATION
 
-```
-    ↓
-```
+↓
 
 PHASE 5:
 
 MEASURE PREDICTED RISK REDUCTION
 
-```
-    ↓
-```
+↓
 
 PHASE 6:
 
 K-MEANS FAILURE PROFILE ANALYSIS
 
-```
-    ↓
-```
+↓
 
 PHASE 7:
 
 PROFILE-GUIDED DOMAIN-CONSTRAINED INTERVENTIONS
 
-```
-    ↓
-```
+↓
 
 PHASE 8:
 
 BASELINE VS PROPOSED METHOD EXPERIMENT
 
-```
-    ↓
-```
+↓
 
 PHASE 9:
 
 STATISTICAL / REPEATED EVALUATION
 
-```
-    ↓
-```
+↓
 
 PHASE 10:
 
 LITERATURE REVIEW + NOVELTY VALIDATION
 
-```
-    ↓
-```
+↓
 
 PHASE 11:
 
 UI POLISH
 
-```
-    ↓
-```
+↓
 
 PHASE 12:
 
 FINAL INTEGRATION TESTING
 
-```
-    ↓
-```
+↓
 
 PHASE 13:
 
 DOCUMENTATION
 
-```
-    ↓
-```
+↓
 
 PHASE 14:
 
 RESEARCH PAPER
 
-```
-    ↓
-```
+↓
 
 PHASE 15:
 
@@ -2893,7 +3435,7 @@ DEPLOYMENT + FINAL DEMONSTRATION
 
 ============================================================
 
-49. TOMORROW'S STARTING POINT
+53. TOMORROW'S STARTING POINT
 
 ============================================================
 
@@ -2917,17 +3459,52 @@ The three-way Random Forest experiment is completed.
 The latest controlled comparison contains:
 
 1. Original RF
+
 2. Optimized RF
+
 3. Cleaned RF
 
 The experiment established the current domain-specific
 baselines.
 
+A research-oriented counterfactual engine baseline has now been
+created and successfully executed on the Student domain.
+
+The research engine currently:
+
+- loads the optimized model bundle,
+- extracts the actual trained Pipeline,
+- accepts DataFrame-based input,
+- generates candidate actionable interventions,
+- calculates model-predicted failure risk,
+- calculates predicted risk reduction,
+- ranks interventions.
+
+The first Student baseline produced:
+
+Original prediction = Exam Failure
+
+Original failure risk = 0.9573
+
+Best tested intervention = studytime 1 → 3
+
+New prediction = Exam Failure
+
+New predicted failure risk = 0.9560
+
+Predicted risk reduction = 0.0013
+
+No tested intervention changed the Student prediction to Passed.
+
+This is a model-based result and must not be interpreted
+causally.
+
 Do NOT continue tuning Random Forest without a specific research
 reason.
 
-The next engineering task is a SAFE ARCHITECTURE AUDIT AND
-CLEANUP.
+The next engineering task remains:
+
+SAFE ARCHITECTURE AUDIT AND CLEANUP.
 
 Do not delete files blindly.
 
@@ -2938,19 +3515,33 @@ After cleanup, test all four domains end-to-end.
 
 Then continue with:
 
-Counterfactual Engine
-→ Student Validation
+Counterfactual Engine Refinement
+
+→ Student Systematic Validation
+
+→ Training-Data-Derived Candidate Values
+
+→ Domain Constraint Validation
+
 → Predicted Risk Reduction
+
 → K-Means Failure Profiles
+
 → Profile-Guided Domain-Constrained Intervention
+
 → Baseline vs Proposed Method
+
 → Intervention Evaluation
+
+→ Statistical / Repeated Evaluation
+
 → Literature Review
+
 → Final Research Framework."
 
 ============================================================
 
-50. EXACT RESEARCH DEVELOPMENT ROADMAP
+54. EXACT RESEARCH DEVELOPMENT ROADMAP
 
 ============================================================
 
@@ -2958,57 +3549,64 @@ CURRENT POSITION:
 
 Three-way RF comparison completed.
 
-```
-    ↓
-```
+Research counterfactual baseline created and tested.
+
+Student counterfactual baseline successfully executed.
+
+↓
 
 NEXT:
 
 Safe architecture audit.
 
-```
-    ↓
-```
+↓
 
 THEN:
 
-Research counterfactual engine.
+Full four-domain end-to-end testing.
 
-```
-    ↓
-```
+↓
 
 THEN:
 
-Test on Student domain.
+Refine research counterfactual engine.
 
-```
-    ↓
-```
+↓
 
 THEN:
 
-Generate feasible interventions.
+Derive candidate values from training data.
 
-```
-    ↓
-```
+↓
+
+THEN:
+
+Validate domain constraints.
+
+↓
+
+THEN:
+
+Systematically test Student counterfactuals.
+
+↓
 
 THEN:
 
 Measure predicted failure-risk reduction.
 
-```
-    ↓
-```
+↓
 
 THEN:
 
 Implement K-Means failure profiles.
+
 ↓
+
 THEN:
 
 Use failure profiles to guide interventions.
+
 ↓
 
 THEN:
@@ -3028,7 +3626,9 @@ Domain-Constrained Counterfactual
 vs
 
 Profile-Guided Domain-Constrained Counterfactual
+
 ↓
+
 THEN:
 
 Evaluate:
@@ -3039,18 +3639,28 @@ Evaluate:
 - Sparsity
 - Risk reduction
 - Prediction transition rate
-  ↓
-  THEN:
+
+↓
+
+THEN:
+
+Perform statistical / repeated evaluation.
+
+↓
+
+THEN:
 
 Validate novelty through literature review.
+
 ↓
+
 THEN:
 
 Finalize research framework and paper.
 
 ============================================================
 
-51. FINAL PROJECT GOAL
+55. FINAL PROJECT GOAL
 
 ============================================================
 
@@ -3087,17 +3697,17 @@ The final platform should allow a user to:
 
 The research system should additionally demonstrate:
 
-## Failure Prediction
+FAILURE PREDICTION
 
-## Failure Profile Identification
+FAILURE PROFILE IDENTIFICATION
 
-## Domain Constraints
+DOMAIN CONSTRAINTS
 
-## Actionable Counterfactual Generation
+ACTIONABLE COUNTERFACTUAL GENERATION
 
-## Risk-Reduction Evaluation
+RISK-REDUCTION EVALUATION
 
-Preventive Decision Support
+PREVENTIVE DECISION SUPPORT
 
 FINAL SYSTEM NAME:
 
@@ -3108,5 +3718,7 @@ PROPOSED RESEARCH FRAMEWORK:
 Domain-Constrained Failure Intelligence System (DC-FIS)
 
 ============================================================
+
 END OF PROJECT PROGRESS
+
 ============================================================

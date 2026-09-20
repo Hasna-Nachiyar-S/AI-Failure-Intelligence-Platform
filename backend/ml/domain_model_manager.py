@@ -3,9 +3,32 @@ import joblib
 import pandas as pd
 
 
+BASE_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..")
+)
+
+
 class DomainModelManager:
 
-    def __init__(self, model_dir="models"):
+    def __init__(self, model_dir=None):
+        # Production models are the controlled experiment artifacts selected
+        # during model comparison. Keep legacy root-level artifacts available
+        # but do not silently use them for production inference.
+        production_dir = os.path.join(
+            BASE_DIR,
+            "backend",
+            "ml",
+            "models"
+        )
+
+        # Existing callers historically passed model_dir="models". Treat
+        # that legacy default as the production model directory so the API,
+        # counterfactual and What-If components all use the same artifacts.
+        if model_dir is None or model_dir == "models":
+            model_dir = production_dir
+        elif not os.path.isabs(model_dir):
+            model_dir = os.path.join(BASE_DIR, model_dir)
+
         self.model_dir = model_dir
         self.models = {}
         self._load_models()
@@ -13,10 +36,10 @@ class DomainModelManager:
     def _load_models(self):
 
         files = {
-            "Student": "student_model.pkl",
-            "Software": "software_model.pkl",
-            "Jobs": "jobs_model.pkl",
-            "Projects": "projects_model.pkl"
+            "Student": "student_optimized_rf.pkl",
+            "Software": "software_original_rf.pkl",
+            "Jobs": "jobs_optimized_rf.pkl",
+            "Projects": "projects_optimized_rf.pkl"
         }
 
         for domain, filename in files.items():
@@ -74,23 +97,30 @@ class DomainModelManager:
 
         features = self.get_features(domain)
 
+        # API/frontend field names are standardized independently from
+        # dataset column spelling. Support both current and legacy aliases.
         aliases = {
             "Project Type": "Project_Type",
-            " Project Cost ": "Project_Cost",
-            " Project Benefit ": "Project_Benefit",
-            "Completion%": "Completion"
+            "Project_Type": "Project_Type",
+            "Project Cost": "Project_Cost",
+            "Project_Cost": "Project_Cost",
+            "Project Benefit": "Project_Benefit",
+            "Project_Benefit": "Project_Benefit",
+            "Completion%": "Completion",
+            "Completion": "Completion"
         }
 
         row = {}
 
         for feature in features:
+            key = aliases.get(feature, feature)
+            value = data.get(key)
 
-            key = aliases.get(
-                feature,
-                feature
-            )
+            # Also accept the raw feature name if an alias was not present.
+            if value is None and key != feature:
+                value = data.get(feature)
 
-            row[feature] = data.get(key)
+            row[feature] = value
 
         return pd.DataFrame(
             [row],

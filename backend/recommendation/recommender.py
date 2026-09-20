@@ -83,6 +83,22 @@ class Recommender:
         }
 
     # -----------------------------------------
+    # Safe numeric conversion
+    # -----------------------------------------
+
+    @staticmethod
+    def _safe_float(value, default=0.0):
+
+        if value is None:
+            return default
+
+        try:
+            return float(value)
+
+        except (TypeError, ValueError):
+            return default
+
+    # -----------------------------------------
     # Recommendations
     # -----------------------------------------
 
@@ -97,20 +113,20 @@ class Recommender:
 
             actions = []
 
-            absences = float(
-                data.get("absences", 0)
+            absences = self._safe_float(
+                data.get("absences")
             )
 
-            study = float(
-                data.get("studytime", 0)
+            study = self._safe_float(
+                data.get("studytime")
             )
 
-            failures = float(
-                data.get("failures", 0)
+            failures = self._safe_float(
+                data.get("failures")
             )
 
-            g2 = float(
-                data.get("G2", 0)
+            g2 = self._safe_float(
+                data.get("G2")
             )
 
             if absences > 10:
@@ -159,18 +175,12 @@ class Recommender:
 
             actions = []
 
-            skills = float(
-                data.get(
-                    "skills_match_score",
-                    0
-                )
+            skills = self._safe_float(
+                data.get("skills_match_score")
             )
 
-            experience = float(
-                data.get(
-                    "years_experience",
-                    0
-                )
+            experience = self._safe_float(
+                data.get("years_experience")
             )
 
             if skills < 50:
@@ -201,8 +211,8 @@ class Recommender:
 
         if domain == "Projects":
 
-            completion = float(
-                data.get("Completion", 0)
+            completion = self._safe_float(
+                data.get("Completion")
             )
 
             if completion < 30:
