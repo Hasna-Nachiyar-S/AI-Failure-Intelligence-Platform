@@ -139,57 +139,33 @@ class ProfileGuidanceEngine:
                 continue
 
             try:
+                current_numeric = float(current_value)
+                profile_numeric = float(profile_value)
+                difference = current_numeric - profile_numeric
+                absolute_difference = abs(difference)
 
-                current_numeric = float(
-                    current_value
-                )
-
-                profile_numeric = float(
-                    profile_value
-                )
-
-            except (
-                TypeError,
-                ValueError
-            ):
-
-                continue
-
-            difference = (
-                current_numeric
-                - profile_numeric
-            )
-
-            absolute_difference = abs(
-                difference
-            )
-
-            ranked.append({
-
-                "feature":
-                    feature,
-
-                "current_value":
-                    current_value,
-
-                "profile_mean":
-                    round(
-                        profile_numeric,
-                        4
-                    ),
-
-                "difference":
-                    round(
-                        difference,
-                        4
-                    ),
-
-                "absolute_difference":
-                    round(
-                        absolute_difference,
-                        4
-                    )
-            })
+                ranked.append({
+                    "feature": feature,
+                    "current_value": current_value,
+                    "profile_mean": round(profile_numeric, 4),
+                    "difference": round(difference, 4),
+                    "absolute_difference": round(absolute_difference, 4)
+                })
+            except (TypeError, ValueError):
+                # Categorical features are ranked by mismatch with the
+                # historical profile mode when available.
+                modes = profile.get("feature_modes", {})
+                mode = modes.get(feature)
+                if mode is None:
+                    continue
+                mismatch = 0 if str(current_value).strip() == str(mode).strip() else 1
+                ranked.append({
+                    "feature": feature,
+                    "current_value": current_value,
+                    "profile_mode": mode,
+                    "difference": None,
+                    "absolute_difference": mismatch
+                })
 
         # -----------------------------------------------------
         # Largest difference first.

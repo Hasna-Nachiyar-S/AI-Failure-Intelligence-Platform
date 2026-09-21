@@ -92,12 +92,9 @@ class FailureProfileAnalyzer:
             "pd",
             "co",
             "rp",
-            "os",
             "bs",
-            "rs",
             "pr",
             "bsr",
-            "re",
         ],
 
         "Jobs": [
@@ -111,7 +108,6 @@ class FailureProfileAnalyzer:
         "Projects": [
             "Project Cost",
             "Project Benefit",
-            "Complexity",
             "Completion%",
             "Year",
             "Month",
@@ -151,6 +147,9 @@ class FailureProfileAnalyzer:
             str,
             List[Dict[str, Any]]
         ] = {}
+
+        # Deterministic encodings for categorical clustering features.
+        self.category_maps: Dict[str, Dict[str, Dict[str, int]]] = {}
 
     # =========================================================
     # Domain normalization
@@ -243,8 +242,7 @@ class FailureProfileAnalyzer:
                 "Project Benefit": ",",
                 "Completion%": "%",
                 "Year": ",",
-                "Month": ",",
-                "Complexity": ",",
+                "Month": ","
             }
             for column, marker in numeric_columns.items():
                 if column in df.columns:
@@ -302,45 +300,34 @@ class FailureProfileAnalyzer:
             available_features
         ].copy()
 
-        # Convert values to numeric.
+        # Convert numeric columns directly and encode categorical columns
+        # deterministically. The encoding is only for K-Means distance; the
+        # original categorical values are retained separately in profiles.
+        self.category_maps.setdefault(domain, {})
+
         for column in X.columns:
+            numeric = pd.to_numeric(X[column], errors="coerce")
+            numeric_ratio = numeric.notna().mean()
 
-            X[column] = pd.to_numeric(
-                X[column],
-                errors="coerce"
-            )
-
-        # Median imputation.
-        for column in X.columns:
-
-            median = X[
-                column
-            ].median()
-
-            if pd.isna(median):
-
-                median = 0
-
-            X[
-                column
-            ] = X[
-                column
-            ].fillna(
-                median
-            )
-
-        # Remove completely unusable columns.
-        X = X.dropna(
-            axis=1,
-            how="all"
-        )
+            if numeric_ratio >= 0.8:
+                X[column] = numeric
+                fill_value = numeric.median()
+                X[column] = X[column].fillna(0 if pd.isna(fill_value) else fill_value)
+            else:
+                values = (
+                    X[column].astype(str).str.strip()
+                    .replace({"": np.nan, "nan": np.nan, "None": np.nan})
+                )
+                categories = sorted(values.dropna().unique().tolist())
+                mapping = {str(value): index for index, value in enumerate(categories)}
+                self.category_maps[domain][column] = mapping
+                X[column] = values.map(lambda value: mapping.get(str(value), np.nan))
+                mode_code = X[column].mode(dropna=True)
+                fill_value = float(mode_code.iloc[0]) if not mode_code.empty else 0.0
+                X[column] = X[column].fillna(fill_value)
 
         if X.shape[1] == 0:
-
-            raise ValueError(
-                f"No usable numerical "
-                f"features for {domain}."
-            )
+            raise ValueError(f"No usable clustering features for {domain}.")
 
         return X
 
@@ -431,7 +418,20 @@ class FailureProfileAnalyzer:
 
         elif domain == "Software":
 
-            pass
+            if "rs" in result.columns:
+                status = (
+                    result["rs"]
+                    .astype(str)
+                    .str.strip()
+                    .str.upper()
+                )
+                # For profile analytics, FIXED is treated as the
+                # non-failure outcome; all other observed issue
+                # resolution states are failure/unsuccessful states.
+                valid = result["rs"].notna() & status.ne("") & status.ne("NAN")
+                result.loc[valid, "_failure"] = (
+                    status.loc[valid] != "FIXED"
+                ).astype(int)
 
         # -----------------------------------------------------
         # Projects
@@ -454,14 +454,14 @@ class FailureProfileAnalyzer:
                     .str.lower()
                 )
 
-                valid = status.notna()
+                valid = result["Status"].notna()
 
                 result.loc[
                     valid,
                     "_failure"
                 ] = (
                     status.loc[valid]
-                    == "failed"
+                    != "completed"
                 ).astype(int)
 
         return result
@@ -625,6 +625,18 @@ class FailureProfileAnalyzer:
             # Basic profile
             # -------------------------------------------------
 
+            source_cluster_rows = working_df.loc[cluster_mask, list(X.columns)]
+            feature_modes = {}
+            for feature in list(X.columns):
+                values = source_cluster_rows[feature].dropna()
+                if not values.empty:
+                    mode = values.mode()
+                    if not mode.empty:
+                        value = mode.iloc[0]
+                        if isinstance(value, np.generic):
+                            value = value.item()
+                        feature_modes[feature] = value
+
             profile = {
 
                 "profile_id":
@@ -655,7 +667,9 @@ class FailureProfileAnalyzer:
                         )
                         for key, value
                         in medians.items()
-                    }
+                    },
+
+                "feature_modes": feature_modes
             }
 
             # =================================================
@@ -900,27 +914,21 @@ class FailureProfileAnalyzer:
                     .median()
                 )
 
-            try:
+            mapping = self.category_maps.get(domain, {}).get(feature)
+            if mapping is not None:
+                key = str(value).strip()
+                if key in mapping:
+                    value = mapping[key]
+                else:
+                    mode = X[feature].mode(dropna=True)
+                    value = float(mode.iloc[0]) if not mode.empty else 0.0
+            else:
+                try:
+                    value = float(value)
+                except (TypeError, ValueError):
+                    value = X[feature].median()
 
-                value = float(
-                    value
-                )
-
-            except (
-                TypeError,
-                ValueError
-            ):
-
-                value = (
-                    X[
-                        feature
-                    ]
-                    .median()
-                )
-
-            row[
-                feature
-            ] = value
+            row[feature] = value
 
         case_df = pd.DataFrame(
             [row],

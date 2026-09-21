@@ -158,6 +158,7 @@ function App() {
 
   const generateCounterfactual = async () => {
     setError("");
+    setCounterfactual(null);
 
     try {
       const data = getData();
@@ -551,7 +552,7 @@ function App() {
       return "New Completion %";
     }
 
-    return "New Complexity";
+    return "New Complexity (numeric)";
   };
 
   return (
@@ -657,98 +658,89 @@ function App() {
         <section className="card">
           <h2>Counterfactual Prevention</h2>
 
-          <p>Find input changes that may change the predicted outcome.</p>
+          <p>
+            Test feasible, domain-constrained changes that may reduce the
+            model-predicted risk or change the predicted outcome.
+          </p>
 
-          <button onClick={generateCounterfactual}>Generate Scenarios</button>
+          <button onClick={generateCounterfactual} disabled={!prediction}>
+            Generate Scenarios
+          </button>
+
+          {!prediction && <p>Run Failure Analysis first.</p>}
 
           {counterfactual && (
             <div className="results">
-              <h3>Original Prediction</h3>
-
-              <p>{counterfactual.original_prediction?.failure_type}</p>
-
-              <p>
-                Probability:{" "}
-                {(
-                  Number(counterfactual.original_prediction?.probability || 0) *
-                  100
-                ).toFixed(2)}
-                %
-              </p>
+              <h3>Analysis Status</h3>
+              <p>{counterfactual.analysis_message}</p>
 
               <h3>Target Prediction</h3>
+              <p>{counterfactual.desired_prediction || "Alternative outcome"}</p>
 
+              <h3>Profile Guidance</h3>
               <p>
-                {counterfactual.desired_prediction || "Alternative outcome"}
+                Profile:{" "}
+                {counterfactual.profile_analysis?.profile_id ?? "N/A"}
+              </p>
+              <p>
+                Prioritized features:{" "}
+                {(counterfactual.prioritized_features_used || []).join(", ") ||
+                  "None"}
               </p>
 
-              <h3>Minimum Effective Change</h3>
+              <h3>Recommended Change</h3>
 
-              {counterfactual.minimum_effective_change ? (
+              {counterfactual.recommended_changes &&
+              Object.keys(counterfactual.recommended_changes).length > 0 ? (
                 <div className="result-box">
-                  <strong>
-                    {counterfactual.minimum_effective_change.feature}
-                  </strong>
-
                   <p>
-                    Change:{" "}
-                    {JSON.stringify(
-                      counterfactual.minimum_effective_change.changes,
-                    )}
+                    {JSON.stringify(counterfactual.recommended_changes)}
                   </p>
 
-                  <p>
-                    New Prediction:{" "}
-                    {counterfactual.minimum_effective_change.prediction}
-                  </p>
-
-                  <p>
-                    Probability:{" "}
-                    {(
-                      Number(
-                        counterfactual.minimum_effective_change.probability,
-                      ) * 100
-                    ).toFixed(2)}
-                    %
-                  </p>
+                  {(counterfactual.best_successful_counterfactual ||
+                    counterfactual.best_risk_reduction_only) && (
+                    <>
+                      <p>
+                        New prediction:{" "}
+                        {
+                          (
+                            counterfactual.best_successful_counterfactual ||
+                            counterfactual.best_risk_reduction_only
+                          ).prediction
+                        }
+                      </p>
+                      <p>
+                        Risk reduction:{" "}
+                        {(
+                          Number(
+                            (
+                              counterfactual.best_successful_counterfactual ||
+                              counterfactual.best_risk_reduction_only
+                            ).risk_reduction || 0
+                          ) * 100
+                        ).toFixed(2)}
+                        percentage points
+                      </p>
+                    </>
+                  )}
                 </div>
               ) : (
-                <p>No successful scenario found.</p>
+                <p>No beneficial feasible intervention found.</p>
               )}
 
-              <h3>Highest Confidence</h3>
-
-              {counterfactual.highest_confidence_scenario ? (
-                <div className="result-box">
-                  <strong>
-                    {counterfactual.highest_confidence_scenario.feature}
-                  </strong>
-
-                  <p>
-                    Change:{" "}
-                    {JSON.stringify(
-                      counterfactual.highest_confidence_scenario.changes,
-                    )}
-                  </p>
-
-                  <p>
-                    Prediction:{" "}
-                    {counterfactual.highest_confidence_scenario.prediction}
-                  </p>
-
-                  <p>
-                    Probability:{" "}
-                    {(
-                      Number(
-                        counterfactual.highest_confidence_scenario.probability,
-                      ) * 100
-                    ).toFixed(2)}
-                    %
-                  </p>
-                </div>
-              ) : (
-                <p>No high-confidence scenario.</p>
-              )}
+              <h3>Scenario Summary</h3>
+              <p>
+                Tested: {counterfactual.feasible_candidate_count || 0} feasible
+                candidates
+              </p>
+              <p>
+                Successful transitions:{" "}
+                {counterfactual.successful_counterfactual_count || 0}
+              </p>
+              <p>
+                Risk-reduction-only scenarios:{" "}
+                {counterfactual.risk_reduction_only_count || 0}
+              </p>
             </div>
           )}
         </section>

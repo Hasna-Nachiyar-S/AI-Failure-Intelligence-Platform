@@ -234,20 +234,66 @@ class CounterfactualGenerator:
         # Determine desired prediction
         # -----------------------------------------------------
 
+        # Failure-prevention defaults are domain-specific. We do not
+        # choose the most probable alternative because that can select
+        # another undesirable outcome (for example Cancelled instead
+        # of Completed in Projects).
+        desired_defaults = {
+            "Student": "Passed",
+            "Software": "FIXED",
+            "Jobs": "Selected",
+            "Projects": "Completed",
+        }
+
         if desired_prediction is None:
+            desired_prediction = desired_defaults.get(domain)
 
-            alternatives = [
-                cls
-                for cls in original_probabilities
-                if cls != original_prediction
-            ]
+        if desired_prediction not in original_probabilities:
+            raise ValueError(
+                f"Desired prediction '{desired_prediction}' is not a valid "
+                f"class for {domain}. Available classes: "
+                f"{list(original_probabilities)}"
+            )
 
-            if alternatives:
-
-                desired_prediction = max(
-                    alternatives,
-                    key=original_probabilities.get
-                )
+        # No intervention is needed when the case already has the
+        # desired outcome. This prevents an unchanged prediction from
+        # being counted as a successful counterfactual.
+        if original_prediction == desired_prediction:
+            return {
+                "original_input": data,
+                "original_prediction": original,
+                "desired_prediction": desired_prediction,
+                "candidate_count": 0,
+                "feasible_candidate_count": 0,
+                "rejected_candidate_count": 0,
+                "analysis_status": "already_desired_outcome",
+                "analysis_message": (
+                    "The model already predicts the domain's desired "
+                    "outcome, so no preventive intervention is required."
+                ),
+                "counterfactuals": [],
+                "successful_counterfactuals": [],
+                "successful_counterfactual_count": 0,
+                "best_successful_counterfactual": None,
+                "risk_reduction_only": [],
+                "risk_reduction_only_count": 0,
+                "best_risk_reduction_only": None,
+                "non_beneficial_count": 0,
+                "best_intervention": None,
+                "recommended_changes": {},
+                "minimum_effective_change": None,
+                "highest_risk_reduction": None,
+                "rejected_candidates": [],
+                "profile_analysis": profile_result,
+                "profile_guidance": profile_guidance,
+                "profile_guided": bool(profile_guided),
+                "profile_guided_feature_limit": max_guided_features,
+                "prioritized_features_used": [],
+                "interpretation": (
+                    "The model already predicts the desired outcome. "
+                    "Counterfactual analysis is therefore not required."
+                ),
+            }
 
         # -----------------------------------------------------
         # Profile-guided feature prioritization
