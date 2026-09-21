@@ -93,15 +93,16 @@ class CounterfactualGenerator:
     def _make_candidates(
         self,
         data,
-        domain
+        domain,
+        prioritized_features=None
     ):
 
         candidates = []
 
         actionable_features = (
-            self.constraints.actionable_features(
-                domain
-            )
+            prioritized_features
+            if prioritized_features
+            else self.constraints.actionable_features(domain)
         )
 
         for feature in actionable_features:
@@ -166,7 +167,9 @@ class CounterfactualGenerator:
     def generate(
         self,
         data,
-        desired_prediction=None
+        desired_prediction=None,
+        profile_guided=True,
+        max_guided_features=2
     ):
 
         # -----------------------------------------------------
@@ -247,12 +250,26 @@ class CounterfactualGenerator:
                 )
 
         # -----------------------------------------------------
+        # Profile-guided feature prioritization
+        # -----------------------------------------------------
+
+        prioritized_features = None
+        if profile_guided and assigned_profile:
+            prioritized_features = self.profile_guidance.prioritized_feature_set(
+                domain,
+                data,
+                assigned_profile,
+                max_features=max_guided_features
+            )
+
+        # -----------------------------------------------------
         # Generate candidates
         # -----------------------------------------------------
 
         candidates = self._make_candidates(
             data,
-            domain
+            domain,
+            prioritized_features=prioritized_features
         )
 
         feasible_candidates = []
@@ -708,6 +725,12 @@ class CounterfactualGenerator:
             "profile_analysis": profile_result,
 
             "profile_guidance": profile_guidance,
+
+            "profile_guided": bool(profile_guided),
+
+            "profile_guided_feature_limit": max_guided_features,
+
+            "prioritized_features_used": prioritized_features or [],
 
             # -------------------------------------------------
             # Interpretation

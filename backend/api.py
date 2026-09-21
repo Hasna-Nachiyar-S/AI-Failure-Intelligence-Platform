@@ -209,10 +209,17 @@ def generate_counterfactual(
 
     payload = data.model_dump()
 
+    profile_guided = payload.pop("profile_guided", True)
+    max_guided_features = payload.pop("max_guided_features", 2)
+    desired_prediction = payload.pop("desired_prediction", None)
+
     try:
 
         return counterfactual.generate(
-            payload
+            payload,
+            desired_prediction=desired_prediction,
+            profile_guided=bool(profile_guided),
+            max_guided_features=max_guided_features
         )
 
     except Exception as e:

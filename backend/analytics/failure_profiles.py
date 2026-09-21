@@ -234,6 +234,24 @@ class FailureProfileAnalyzer:
             .str.strip()
         )
 
+        # Project datasets contain formatted numeric strings such as
+        # "3,648,615.00" and "77%". Normalize them before clustering
+        # so K-Means does not silently turn them into missing values.
+        if domain == "Projects":
+            numeric_columns = {
+                "Project Cost": ",",
+                "Project Benefit": ",",
+                "Completion%": "%",
+                "Year": ",",
+                "Month": ",",
+                "Complexity": ",",
+            }
+            for column, marker in numeric_columns.items():
+                if column in df.columns:
+                    value = df[column].astype(str).str.strip()
+                    value = value.str.replace(marker, "", regex=False)
+                    df[column] = pd.to_numeric(value, errors="coerce")
+
         self.datasets[
             domain
         ] = df

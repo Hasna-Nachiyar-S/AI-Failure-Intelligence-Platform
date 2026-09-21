@@ -133,6 +133,17 @@ class CandidateSampler:
             .str.strip()
         )
 
+        # Normalize formatted Project numeric fields before sampling.
+        if domain == "Projects":
+            for column in ["Project Cost", "Project Benefit", "Completion%", "Complexity"]:
+                if column in df.columns:
+                    value = df[column].astype(str).str.strip()
+                    if column == "Completion%":
+                        value = value.str.replace("%", "", regex=False)
+                    else:
+                        value = value.str.replace(",", "", regex=False)
+                    df[column] = pd.to_numeric(value, errors="coerce")
+
         self.cache[domain] = df
 
         return df

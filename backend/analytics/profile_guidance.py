@@ -205,6 +205,34 @@ class ProfileGuidanceEngine:
 
         return ranked
 
+
+    def prioritized_feature_set(
+        self,
+        domain: str,
+        current_data: Dict[str, Any],
+        profile: Dict[str, Any],
+        max_features: int | None = None
+    ) -> List[str]:
+        """Return profile-guided actionable features in priority order.
+
+        The ranking is descriptive: it identifies actionable features whose
+        current values differ most from the assigned historical profile.
+        It does not claim that moving toward a profile causes improvement.
+        """
+        ranked = self.rank_features(domain, current_data, profile)
+        features = [item["feature"] for item in ranked]
+
+        # Keep actionable features without profile statistics available
+        # after ranked features, so the method never becomes unusable merely
+        # because a profile lacks a value for one feature.
+        for feature in self.actionable_features[self.normalize_domain(domain)]:
+            if feature not in features:
+                features.append(feature)
+
+        if max_features is not None:
+            return features[:max(1, int(max_features))]
+        return features
+
     # =========================================================
     # Get profile guidance
     # =========================================================
