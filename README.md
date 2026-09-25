@@ -163,3 +163,33 @@ data/
 scripts/
 notebooks/
 ```
+
+## Product Development Additions
+
+The development branch now includes a user/account layer on top of the existing ML system.
+
+### Authentication
+
+- Sign up with name, email and password
+- Sign in / sign out
+- Passwords stored as PBKDF2-SHA256 hashes
+- Server-side sessions stored in SQLite
+- HTTP-only session cookie
+
+### Personalized workspace
+
+- Personal dashboard for each account
+- Per-user analysis history
+- Recent analysis activity
+- Domain usage breakdown
+- Average predicted probability across recorded analyses
+- Dedicated history page
+
+### Important architecture decision
+
+The ML models and existing failure-intelligence pipeline remain unchanged. User management is implemented as an application layer around the existing prediction/recommendation system.
+
+The local SQLite database is created automatically at:
+`backend/data/app.db`
+
+This database is intentionally excluded from version control.

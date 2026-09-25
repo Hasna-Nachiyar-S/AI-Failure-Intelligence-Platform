@@ -2,7 +2,11 @@ from typing import Optional, Any
 
 from fastapi import (
     FastAPI,
-    HTTPException
+    HTTPException,
+    Request,
+    Response,
+    Depends,
+    Cookie,
 )
 
 from fastapi.middleware.cors import (
@@ -35,6 +39,19 @@ from backend.what_if.simulator import (
     WhatIfSimulator
 )
 from backend.counterfactual.constraint_engine import DomainConstraintEngine
+from backend.auth import (
+    SESSION_COOKIE,
+    SESSION_MAX_AGE,
+    authenticate,
+    create_session,
+    create_user,
+    delete_session,
+    get_dashboard,
+    get_history,
+    get_user_by_session,
+    record_analysis,
+)
+import json
 
 
 app = FastAPI(
@@ -150,6 +167,24 @@ class WhatIfInput(FailureInput):
     )
 
 
+
+class AuthSignup(BaseModel):
+    full_name: str
+    email: str
+    password: str
+
+
+class AuthLogin(BaseModel):
+    email: str
+    password: str
+
+
+def current_user(session: Optional[str] = Cookie(default=None, alias=SESSION_COOKIE)):
+    user = get_user_by_session(session)
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required.")
+    return user
+
 DOMAIN_REQUIRED_FIELDS = {
     "Student": ["absences", "studytime", "failures", "G1", "G2"],
     "Software": ["pr", "cl", "pd", "co", "rp", "os", "bs", "bsr", "re", "at"],
@@ -193,7 +228,7 @@ def health():
 
 
 @app.post("/predict")
-def predict(data: FailureInput):
+def predict(data: FailureInput, user: dict = Depends(current_user)):
 
     payload = data.model_dump()
     validate_domain_payload(data, payload)
@@ -214,23 +249,109 @@ def predict(data: FailureInput):
 
 
 @app.post("/recommend")
-def recommend(data: FailureInput):
+def recommend(data: FailureInput, user: dict = Depends(current_user)):
 
     payload = data.model_dump()
     validate_domain_payload(data, payload)
 
     try:
-
-        return recommender.recommend(
-            payload
+        result = recommender.recommend(payload)
+        prediction = result.get("prediction") or {}
+        probability = prediction.get("probability")
+        failure_type = prediction.get("failure_type")
+        record_analysis(
+            user["id"],
+            str(data.Domain),
+            failure_type,
+            float(probability) if probability is not None else None,
+            json.dumps(payload, default=str),
+            json.dumps(result, default=str),
         )
+        return result
 
+    except HTTPException:
+        raise
     except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
-        raise HTTPException(
-            status_code=400,
-            detail=str(e)
-        )
+
+@app.get("/auth/me")
+def auth_me(user: dict = Depends(current_user)):
+    return user
+
+
+@app.post("/auth/signup")
+def auth_signup(data: AuthSignup, response: Response):
+    full_name = data.full_name.strip()
+    email = data.email.strip().lower()
+    if len(full_name) < 2:
+        raise HTTPException(status_code=422, detail="Please enter your full name.")
+    if "@" not in email or "." not in email.split("@")[-1]:
+        raise HTTPException(status_code=422, detail="Please enter a valid email address.")
+    if len(data.password) < 8:
+        raise HTTPException(status_code=422, detail="Password must be at least 8 characters.")
+
+    try:
+        user = create_user(full_name, email, data.password)
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+
+    token = create_session(user["id"])
+    response.set_cookie(
+        SESSION_COOKIE,
+        token,
+        max_age=SESSION_MAX_AGE,
+        httponly=True,
+        samesite="lax",
+        secure=False,
+    )
+    return user
+
+
+@app.post("/auth/login")
+def auth_login(data: AuthLogin, response: Response):
+    user = authenticate(data.email, data.password)
+    if not user:
+        raise HTTPException(status_code=401, detail="Incorrect email or password.")
+
+    token = create_session(user["id"])
+    response.set_cookie(
+        SESSION_COOKIE,
+        token,
+        max_age=SESSION_MAX_AGE,
+        httponly=True,
+        samesite="lax",
+        secure=False,
+    )
+    return {
+        "id": user["id"],
+        "full_name": user["full_name"],
+        "email": user["email"],
+        "created_at": user["created_at"],
+    }
+
+
+@app.post("/auth/logout")
+def auth_logout(
+    response: Response,
+    session: Optional[str] = Cookie(default=None, alias=SESSION_COOKIE),
+):
+    delete_session(session)
+    response.delete_cookie(SESSION_COOKIE)
+    return {"message": "Logged out."}
+
+
+@app.get("/dashboard")
+def dashboard(user: dict = Depends(current_user)):
+    return {
+        "user": user,
+        **get_dashboard(user["id"]),
+    }
+
+
+@app.get("/history")
+def history(user: dict = Depends(current_user)):
+    return get_history(user["id"])
 
 
 @app.get("/constraints/{domain}")
@@ -243,7 +364,8 @@ def get_constraints(domain: str):
 
 @app.post("/counterfactual")
 def generate_counterfactual(
-    data: FailureInput
+    data: FailureInput,
+    user: dict = Depends(current_user),
 ):
 
     payload = data.model_dump()
@@ -272,7 +394,8 @@ def generate_counterfactual(
 
 @app.post("/what-if")
 def simulate_what_if(
-    data: WhatIfInput
+    data: WhatIfInput,
+    user: dict = Depends(current_user),
 ):
 
     payload = data.model_dump()
