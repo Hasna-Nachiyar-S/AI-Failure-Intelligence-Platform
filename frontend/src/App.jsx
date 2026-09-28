@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-const API = "http://localhost:8000";
+const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const emptyResults = () => ({
   prediction: null,
@@ -21,6 +21,9 @@ function App() {
   const [authError, setAuthError] = useState("");
   const [dashboard, setDashboard] = useState(null);
   const [history, setHistory] = useState([]);
+  const [historyFilter, setHistoryFilter] = useState("All");
+  const [selectedAnalysis, setSelectedAnalysis] = useState(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const [domain, setDomain] = useState("Student");
   const [student, setStudent] = useState({
     absences: 10,
@@ -62,6 +65,7 @@ function App() {
     Month: 6,
   });
   const [results, setResults] = useState(emptyResults());
+  const [whatIfFeature, setWhatIfFeature] = useState("absences");
   const [whatIfValue, setWhatIfValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -150,26 +154,155 @@ function App() {
     }
   };
 
+  const getWhatIfOptions = () => {
+    const options = {
+      Student: [
+        {
+          key: "absences",
+          label: "Absences",
+          type: "number",
+          min: 0,
+          max: 93,
+          step: 1,
+        },
+        {
+          key: "studytime",
+          label: "Study Time",
+          type: "select",
+          values: [1, 2, 3, 4],
+        },
+      ],
+      Software: [
+        { key: "pr", label: "Priority", type: "text" },
+        { key: "cl", label: "Complexity", type: "text" },
+        { key: "rp", label: "Risk", type: "text" },
+        { key: "os", label: "Operating System", type: "text" },
+        { key: "bs", label: "Bug Size", type: "text" },
+        { key: "bsr", label: "Bug Severity", type: "text" },
+      ],
+      Jobs: [
+        {
+          key: "skills_match_score",
+          label: "Skills Match Score",
+          type: "number",
+          min: 0,
+          max: 100,
+          step: 1,
+        },
+        {
+          key: "project_count",
+          label: "Project Count",
+          type: "number",
+          min: 0,
+          max: 100,
+          step: 1,
+        },
+        {
+          key: "resume_length",
+          label: "Resume Length",
+          type: "number",
+          min: 0,
+          max: 10000,
+          step: 1,
+        },
+        {
+          key: "github_activity",
+          label: "GitHub Activity",
+          type: "number",
+          min: 0,
+          max: 100,
+          step: 1,
+        },
+      ],
+      Projects: [
+        {
+          key: "Project_Cost",
+          label: "Project Cost",
+          type: "number",
+          min: 0,
+          step: 1,
+        },
+        {
+          key: "Project_Benefit",
+          label: "Project Benefit",
+          type: "number",
+          min: 0,
+          step: 1,
+        },
+        {
+          key: "Completion",
+          label: "Completion %",
+          type: "number",
+          min: 0,
+          max: 100,
+          step: 1,
+        },
+        { key: "Complexity", label: "Complexity", type: "text" },
+        { key: "Phase", label: "Phase", type: "text" },
+      ],
+    };
+    return options[domain] || [];
+  };
+
+  const getCurrentDomainValue = (key, selectedDomain = domain) => {
+    if (selectedDomain === "Student") return student[key];
+    if (selectedDomain === "Software") return software[key];
+    if (selectedDomain === "Jobs") return jobs[key];
+    return projects[key];
+  };
+
+  const getWhatIfConfig = () =>
+    getWhatIfOptions().find((option) => option.key === whatIfFeature) ||
+    getWhatIfOptions()[0];
+
+  const resetWhatIf = (nextDomain = domain) => {
+    const options = {
+      Student: ["absences", "studytime"],
+      Software: ["pr", "cl", "rp", "os", "bs", "bsr"],
+      Jobs: [
+        "skills_match_score",
+        "project_count",
+        "resume_length",
+        "github_activity",
+      ],
+      Projects: [
+        "Project_Cost",
+        "Project_Benefit",
+        "Completion",
+        "Complexity",
+        "Phase",
+      ],
+    };
+    const nextFeature = options[nextDomain][0];
+    setWhatIfFeature(nextFeature);
+    setWhatIfValue(
+      String(getCurrentDomainValue(nextFeature, nextDomain) ?? ""),
+    );
+  };
+
   const runWhatIf = async () => {
-    if (whatIfValue === "" || !Number.isFinite(Number(whatIfValue))) {
-      setError("Please enter a valid number.");
+    const config = getWhatIfConfig();
+    if (!config || whatIfValue === "") {
+      setError("Please enter a value for the selected feature.");
       return;
+    }
+    let value = whatIfValue;
+    if (config.type === "number" || config.type === "select") {
+      value = Number(whatIfValue);
+      if (!Number.isFinite(value)) {
+        setError("Please enter a valid numeric value.");
+        return;
+      }
     }
     setLoading(true);
     setError("");
     try {
-      const changes =
-        domain === "Student"
-          ? { G2: Number(whatIfValue) }
-          : domain === "Jobs"
-            ? { skills_match_score: Number(whatIfValue) }
-            : domain === "Projects"
-              ? { Completion: Number(whatIfValue) }
-              : { cl: String(Number(whatIfValue)) };
-
       const result = await api("/what-if", {
         method: "POST",
-        body: JSON.stringify({ ...getData(), changes }),
+        body: JSON.stringify({
+          ...getData(),
+          changes: { [whatIfFeature]: value },
+        }),
       });
       setResults((old) => ({ ...old, whatIf: result }));
     } catch (err) {
@@ -205,8 +338,22 @@ function App() {
     setUser(null);
     setDashboard(null);
     setHistory([]);
+    setSelectedAnalysis(null);
     setScreen("auth");
     setAuthForm({ full_name: "", email: "", password: "" });
+  };
+
+  const openAnalysis = async (id) => {
+    setHistoryLoading(true);
+    setError("");
+    try {
+      const detail = await api(`/history/${id}`);
+      setSelectedAnalysis(detail);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setHistoryLoading(false);
+    }
   };
 
   const goDashboard = async () => {
@@ -226,14 +373,7 @@ function App() {
     [dashboard],
   );
 
-  const getWhatIfLabel = () =>
-    domain === "Student"
-      ? "New G2"
-      : domain === "Jobs"
-        ? "New Skills Match Score"
-        : domain === "Projects"
-          ? "New Completion %"
-          : "New Complexity (numeric)";
+  const whatIfConfig = getWhatIfConfig();
 
   const renderStudent = () => (
     <>
@@ -562,7 +702,46 @@ function App() {
               detail="Saved analysis records"
             />
           </div>
-          <div className="dashboard-grid">
+          <div className="chart-grid">
+            <ChartPanel
+              title="Domain share"
+              eyebrow="PORTFOLIO"
+              description="How your saved analyses are distributed across domains."
+            >
+              <DonutChart
+                data={dashboard?.domain_breakdown || []}
+                labelKey="domain"
+                valueKey="count"
+              />
+            </ChartPanel>
+            <ChartPanel
+              title="Analyses by domain"
+              eyebrow="ACTIVITY"
+              description="Number of completed analyses in each domain."
+            >
+              <BarChart
+                data={dashboard?.domain_breakdown || []}
+                labelKey="domain"
+                valueKey="count"
+              />
+            </ChartPanel>
+          </div>
+          <div className="chart-grid">
+            <ChartPanel
+              title="Recent predicted probability"
+              eyebrow="RISK TREND"
+              description="Model probability recorded for your most recent analyses."
+            >
+              <LineChart
+                data={(dashboard?.recent_analyses || [])
+                  .slice()
+                  .reverse()
+                  .map((item, index) => ({ ...item, label: `#${index + 1}` }))}
+                labelKey="label"
+                valueKey="probability"
+                percent
+              />
+            </ChartPanel>
             <section className="panel">
               <div className="panel-head">
                 <div>
@@ -582,36 +761,6 @@ function App() {
                   .map((item) => <HistoryRow key={item.id} item={item} />)
               ) : (
                 <Empty text="No analyses yet. Run your first analysis to build your personal history." />
-              )}
-            </section>
-            <section className="panel">
-              <div className="panel-head">
-                <div>
-                  <p className="eyebrow">YOUR DOMAINS</p>
-                  <h2>Analysis breakdown</h2>
-                </div>
-              </div>
-              {dashboard?.domain_breakdown?.length ? (
-                dashboard.domain_breakdown.map((item) => {
-                  const pct = dashboard.total_analyses
-                    ? (item.count / dashboard.total_analyses) * 100
-                    : 0;
-                  return (
-                    <div className="domain-row" key={item.domain}>
-                      <div>
-                        <strong>{item.domain}</strong>
-                        <span>
-                          {item.count} analysis{item.count !== 1 ? "es" : ""}
-                        </span>
-                      </div>
-                      <div className="bar">
-                        <i style={{ width: `${pct}%` }} />
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <Empty text="Your domain activity will appear here." />
               )}
             </section>
           </div>
@@ -640,15 +789,98 @@ function App() {
               can review your work later.
             </p>
           </div>
+          <div className="history-toolbar">
+            <label className="filter-label">
+              <span>Filter by domain</span>
+              <select
+                value={historyFilter}
+                onChange={(e) => setHistoryFilter(e.target.value)}
+              >
+                <option>All</option>
+                <option>Student</option>
+                <option>Software</option>
+                <option>Jobs</option>
+                <option>Projects</option>
+              </select>
+            </label>
+            <span className="muted">
+              {
+                history.filter(
+                  (x) => historyFilter === "All" || x.domain === historyFilter,
+                ).length
+              }{" "}
+              record(s)
+            </span>
+          </div>
+          <div className="chart-grid">
+            <ChartPanel
+              title="History probability trend"
+              eyebrow="HISTORY"
+              description="Saved model probabilities for the current filter."
+            >
+              <LineChart
+                data={history
+                  .filter(
+                    (x) =>
+                      historyFilter === "All" || x.domain === historyFilter,
+                  )
+                  .slice()
+                  .reverse()
+                  .map((item, index) => ({ ...item, label: `#${index + 1}` }))}
+                labelKey="label"
+                valueKey="probability"
+                percent
+              />
+            </ChartPanel>
+            <ChartPanel
+              title="History domain mix"
+              eyebrow="COMPOSITION"
+              description="Share of saved records in the current filter."
+            >
+              <DonutChart
+                data={countDomains(
+                  history.filter(
+                    (x) =>
+                      historyFilter === "All" || x.domain === historyFilter,
+                  ),
+                )}
+                labelKey="domain"
+                valueKey="count"
+              />
+            </ChartPanel>
+          </div>
           <section className="panel history-panel">
-            {history.length ? (
-              history.map((item) => (
-                <HistoryRow key={item.id} item={item} detailed />
-              ))
+            {history.filter(
+              (x) => historyFilter === "All" || x.domain === historyFilter,
+            ).length ? (
+              history
+                .filter(
+                  (x) => historyFilter === "All" || x.domain === historyFilter,
+                )
+                .map((item) => (
+                  <HistoryRow
+                    key={item.id}
+                    item={item}
+                    detailed
+                    onOpen={openAnalysis}
+                  />
+                ))
             ) : (
-              <Empty text="No saved analyses yet." />
+              <Empty
+                text={
+                  history.length
+                    ? "No analyses match this filter."
+                    : "No saved analyses yet."
+                }
+              />
             )}
           </section>
+          {selectedAnalysis && (
+            <AnalysisDetail
+              analysis={selectedAnalysis}
+              onClose={() => setSelectedAnalysis(null)}
+            />
+          )}
         </main>
       </div>
     );
@@ -688,8 +920,10 @@ function App() {
             <select
               value={domain}
               onChange={(e) => {
-                setDomain(e.target.value);
+                const nextDomain = e.target.value;
+                setDomain(nextDomain);
                 resetResults();
+                resetWhatIf(nextDomain);
               }}
             >
               <option>Student</option>
@@ -732,15 +966,11 @@ function App() {
                   <b>{(probability || 0).toFixed(2)}%</b>
                   <small>model probability</small>
                 </div>
-                <div className="prob-list">
-                  {Object.entries(
-                    results.prediction.class_probabilities || {},
-                  ).map(([label, value]) => (
-                    <div className="probability" key={label}>
-                      <span>{label}</span>
-                      <strong>{(Number(value) * 100).toFixed(2)}%</strong>
-                    </div>
-                  ))}
+                <div className="prob-chart">
+                  <h3>Class probabilities</h3>
+                  <HorizontalProbabilities
+                    probabilities={results.prediction.class_probabilities || {}}
+                  />
                 </div>
                 <div className="result-section">
                   <h3>Recommendations</h3>
@@ -865,15 +1095,51 @@ function App() {
               </div>
             </div>
             <p>
-              Change one important numeric feature and test the model again.
+              Change one actionable feature and test the model again. Immutable
+              features are intentionally excluded.
             </p>
-            <Field label={getWhatIfLabel()}>
-              <input
-                type="number"
-                value={whatIfValue}
-                onChange={(e) => setWhatIfValue(e.target.value)}
-                placeholder="Enter new value"
-              />
+            <Field label="Feature to change">
+              <select
+                value={whatIfFeature}
+                onChange={(e) => {
+                  const nextFeature = e.target.value;
+                  setWhatIfFeature(nextFeature);
+                  setWhatIfValue(
+                    String(getCurrentDomainValue(nextFeature) ?? ""),
+                  );
+                  setResults((old) => ({ ...old, whatIf: null }));
+                }}
+              >
+                {getWhatIfOptions().map((option) => (
+                  <option key={option.key} value={option.key}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label={`New ${whatIfConfig?.label || "value"}`}>
+              {whatIfConfig?.type === "select" ? (
+                <select
+                  value={whatIfValue}
+                  onChange={(e) => setWhatIfValue(e.target.value)}
+                >
+                  {whatIfConfig.values.map((value) => (
+                    <option key={value} value={value}>
+                      {value}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type={whatIfConfig?.type === "number" ? "number" : "text"}
+                  min={whatIfConfig?.min}
+                  max={whatIfConfig?.max}
+                  step={whatIfConfig?.step}
+                  value={whatIfValue}
+                  onChange={(e) => setWhatIfValue(e.target.value)}
+                  placeholder={`Enter new ${whatIfConfig?.label?.toLowerCase() || "value"}`}
+                />
+              )}
             </Field>
             <button
               className="secondary-btn"
@@ -996,9 +1262,13 @@ function Stat({ title, value, detail }) {
   );
 }
 
-function HistoryRow({ item, detailed = false }) {
+function HistoryRow({ item, detailed = false, onOpen }) {
   return (
-    <div className={`history-row ${detailed ? "detailed" : ""}`}>
+    <button
+      className={`history-row history-row-button ${detailed ? "detailed" : ""}`}
+      onClick={() => onOpen?.(item.id)}
+      type="button"
+    >
       <div className="history-icon">{item.domain.slice(0, 1)}</div>
       <div className="history-main">
         <strong>{item.domain}</strong>
@@ -1019,6 +1289,233 @@ function HistoryRow({ item, detailed = false }) {
             : "predicted probability"}
         </small>
       </div>
+    </button>
+  );
+}
+
+function AnalysisDetail({ analysis, onClose }) {
+  let input = {};
+  let result = {};
+  try {
+    input =
+      typeof analysis.input_json === "string"
+        ? JSON.parse(analysis.input_json)
+        : analysis.input_json || {};
+  } catch {
+    input = {};
+  }
+  try {
+    result =
+      typeof analysis.result_json === "string"
+        ? JSON.parse(analysis.result_json)
+        : analysis.result_json || {};
+  } catch {
+    result = {};
+  }
+  const prediction = result.prediction || {};
+  const probability =
+    analysis.probability == null ? null : Number(analysis.probability) * 100;
+  return (
+    <div
+      className="detail-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Analysis details"
+    >
+      <section className="detail-card">
+        <div className="panel-head">
+          <div>
+            <p className="eyebrow">SAVED ANALYSIS #{analysis.id}</p>
+            <h2>{analysis.domain}</h2>
+            <p className="muted">
+              {new Date(analysis.created_at).toLocaleString()}
+            </p>
+          </div>
+          <button className="account-button" onClick={onClose} type="button">
+            Close
+          </button>
+        </div>
+        <div className="detail-summary">
+          <div>
+            <span>Prediction</span>
+            <strong>
+              {prediction.failure_type || analysis.prediction || "—"}
+            </strong>
+          </div>
+          <div>
+            <span>Probability</span>
+            <strong>
+              {probability == null ? "—" : `${probability.toFixed(2)}%`}
+            </strong>
+          </div>
+        </div>
+        <h3>Recorded inputs</h3>
+        <pre className="detail-json">{JSON.stringify(input, null, 2)}</pre>
+      </section>
+    </div>
+  );
+}
+
+function ChartPanel({ title, eyebrow, description, children }) {
+  return (
+    <section className="panel chart-panel">
+      <div className="panel-head">
+        <div>
+          <p className="eyebrow">{eyebrow}</p>
+          <h2>{title}</h2>
+        </div>
+      </div>
+      {description && <p className="chart-description">{description}</p>}
+      {children}
+    </section>
+  );
+}
+function countDomains(items) {
+  const counts = {};
+  items.forEach((item) => {
+    counts[item.domain] = (counts[item.domain] || 0) + 1;
+  });
+  return Object.entries(counts).map(([domain, count]) => ({ domain, count }));
+}
+function DonutChart({ data, labelKey, valueKey }) {
+  const total = data.reduce(
+    (sum, item) => sum + Number(item[valueKey] || 0),
+    0,
+  );
+  if (!total) return <Empty text="No chart data yet." />;
+  const colors = [
+    "#315efb",
+    "#17a673",
+    "#f59e0b",
+    "#8b5cf6",
+    "#ef476f",
+    "#0ea5e9",
+  ];
+  let start = 0;
+  const stops = data.map((item, index) => {
+    const end = start + (Number(item[valueKey] || 0) / total) * 100;
+    const stop = `${colors[index % colors.length]} ${start}% ${end}%`;
+    start = end;
+    return stop;
+  });
+  return (
+    <div className="donut-wrap">
+      <div
+        className="donut"
+        style={{ background: `conic-gradient(${stops.join(", ")})` }}
+      >
+        <div className="donut-hole">
+          <strong>{total}</strong>
+          <span>analyses</span>
+        </div>
+      </div>
+      <div className="chart-legend">
+        {data.map((item, index) => (
+          <div key={item[labelKey]}>
+            <i style={{ background: colors[index % colors.length] }} />
+            <span>{item[labelKey]}</span>
+            <b>{item[valueKey]}</b>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+function BarChart({ data, labelKey, valueKey }) {
+  if (!data.length) return <Empty text="No chart data yet." />;
+  const max = Math.max(...data.map((item) => Number(item[valueKey] || 0)), 1);
+  return (
+    <div className="bar-chart">
+      {data.map((item) => (
+        <div className="bar-item" key={item[labelKey]}>
+          <div className="bar-label">
+            <span>{item[labelKey]}</span>
+            <b>{item[valueKey]}</b>
+          </div>
+          <div className="bar-track">
+            <i
+              style={{ width: `${(Number(item[valueKey] || 0) / max) * 100}%` }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+function LineChart({ data, labelKey, valueKey, percent = false }) {
+  if (!data.length) return <Empty text="No chart data yet." />;
+  const values = data.map(
+    (item) => Number(item[valueKey] || 0) * (percent ? 100 : 1),
+  );
+  const max = Math.max(...values, 1),
+    min = Math.min(...values, 0),
+    width = 600,
+    height = 220,
+    pad = 28,
+    range = max - min || 1;
+  const points = values.map((value, index) => ({
+    x: pad + (index * (width - pad * 2)) / Math.max(data.length - 1, 1),
+    y: height - pad - ((value - min) / range) * (height - pad * 2),
+  }));
+  return (
+    <div className="line-chart">
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        role="img"
+        aria-label="Probability trend chart"
+      >
+        <line
+          x1={pad}
+          y1={height - pad}
+          x2={width - pad}
+          y2={height - pad}
+          className="chart-axis"
+        />
+        <polyline
+          points={points.map((p) => `${p.x},${p.y}`).join(" ")}
+          fill="none"
+          className="chart-line"
+        />
+        {points.map((point, index) => (
+          <circle
+            key={index}
+            cx={point.x}
+            cy={point.y}
+            r="4"
+            className="chart-dot"
+          />
+        ))}
+      </svg>
+      <div className="line-labels">
+        {data.map((item, index) => (
+          <span key={index}>{item[labelKey]}</span>
+        ))}
+      </div>
+      <div className="line-range">
+        <span>{percent ? `${max.toFixed(0)}%` : max.toFixed(0)}</span>
+        <span>{percent ? `${min.toFixed(0)}%` : min.toFixed(0)}</span>
+      </div>
+    </div>
+  );
+}
+function HorizontalProbabilities({ probabilities }) {
+  const entries = Object.entries(probabilities);
+  if (!entries.length)
+    return <Empty text="No class probabilities available." />;
+  const max = Math.max(...entries.map(([, value]) => Number(value)), 1);
+  return (
+    <div className="horizontal-probs">
+      {entries.map(([label, value]) => (
+        <div key={label}>
+          <div className="prob-head">
+            <span>{label}</span>
+            <b>{(Number(value) * 100).toFixed(2)}%</b>
+          </div>
+          <div className="prob-track">
+            <i style={{ width: `${(Number(value) / max) * 100}%` }} />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

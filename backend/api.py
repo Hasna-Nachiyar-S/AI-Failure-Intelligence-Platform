@@ -48,10 +48,12 @@ from backend.auth import (
     delete_session,
     get_dashboard,
     get_history,
+    get_analysis,
     get_user_by_session,
     record_analysis,
 )
 import json
+import os
 
 
 app = FastAPI(
@@ -63,8 +65,12 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173"
+        origin.strip()
+        for origin in os.getenv(
+            "AFI_ALLOWED_ORIGINS",
+            "http://localhost:5173,http://127.0.0.1:5173"
+        ).split(",")
+        if origin.strip()
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -354,6 +360,14 @@ def history(user: dict = Depends(current_user)):
     return get_history(user["id"])
 
 
+@app.get("/history/{analysis_id}")
+def history_detail(analysis_id: int, user: dict = Depends(current_user)):
+    analysis = get_analysis(user["id"], analysis_id)
+    if not analysis:
+        raise HTTPException(status_code=404, detail="Analysis not found.")
+    return analysis
+
+
 @app.get("/constraints/{domain}")
 def get_constraints(domain: str):
     try:
@@ -405,6 +419,16 @@ def simulate_what_if(
         "changes",
         {}
     )
+
+    if not changes:
+        raise HTTPException(status_code=422, detail="At least one What-If change is required.")
+
+    valid_changes, reasons = constraints.filter_changes(data.Domain, changes)
+    if not valid_changes:
+        raise HTTPException(
+            status_code=422,
+            detail={"domain": data.Domain, "invalid_changes": reasons},
+        )
 
     try:
 

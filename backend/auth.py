@@ -236,6 +236,30 @@ def get_dashboard(user_id: int):
     }
 
 
+def get_analysis(user_id: int, analysis_id: int):
+    with _connect() as conn:
+        row = conn.execute(
+            """
+            SELECT id, domain, prediction, probability, input_json, result_json, created_at
+            FROM analyses
+            WHERE id = ? AND user_id = ?
+            """,
+            (analysis_id, user_id),
+        ).fetchone()
+    if not row:
+        return None
+    item = dict(row)
+    try:
+        item["input"] = __import__("json").loads(item.pop("input_json"))
+    except Exception:
+        item["input"] = {}
+    try:
+        item["result"] = __import__("json").loads(item.pop("result_json"))
+    except Exception:
+        item["result"] = {}
+    return item
+
+
 def get_history(user_id: int, limit: int = 50):
     with _connect() as conn:
         rows = conn.execute(

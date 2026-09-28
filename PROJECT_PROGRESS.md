@@ -1,62 +1,62 @@
-**# AI-Failure-Intelligence-Platform**
+**\*\*# AI-Failure-Intelligence-Platform\*\***
 
-**## Project Progress and Research Status**
+**\*\*## Project Progress and Research Status\*\***
 
-\***\*Project:\*\*** AI-Failure-Intelligence-Platform
+\\\***\*\*\\\*Project:\\\*\\\*\*\*** AI-Failure-Intelligence-Platform
 
-\***\*Working Research Title:\*\*** Failure Analytics and Decision Support System Using Machine Learning Techniques
+\\\***\*\*\\\*Working Research Title:\\\*\\\*\*\*** Failure Analytics and Decision Support System Using Machine Learning Techniques
 
-\***\*Current System Status:\*\*** CODING COMPLETE / READY FOR RESEARCH
+\\\***\*\*\\\*Current System Status:\\\*\\\*\*\*** CODING COMPLETE / READY FOR RESEARCH
 
-\***\*Current Coding Baseline:\*\*** `AI-Failure-Intelligence-Platform-coding-complete-v1.zip`
+\\\***\*\*\\\*Current Coding Baseline:\\\*\\\*\*\*** \`AI-Failure-Intelligence-Platform-coding-complete-v1.zip\`
 
-**---**
+**\*\*---\*\***
 
-**# 1. Project Goal**
+**\*\*# 1. Project Goal\*\***
 
 The project is a multi-domain AI failure intelligence and decision-support platform.
 
 The system currently supports four domains:
 
-1. Student
+1\. Student
 
-2. Software
+2\. Software
 
-3. Jobs
+3\. Jobs
 
-4. Projects
+4\. Projects
 
 The system is designed to:
 
-- Predict failure/outcome classes.
+\- Predict failure/outcome classes.
 
-- Provide class probabilities.
+\- Provide class probabilities.
 
-- Identify historical failure profiles.
+\- Identify historical failure profiles.
 
-- Explain risk using failure-profile information.
+\- Explain risk using failure-profile information.
 
-- Generate domain-constrained counterfactual scenarios.
+\- Generate domain-constrained counterfactual scenarios.
 
-- Identify feasible changes that reduce model-predicted risk.
+\- Identify feasible changes that reduce model-predicted risk.
 
-- Detect successful prediction transitions.
+\- Detect successful prediction transitions.
 
-- Support What-If simulation.
+\- Support What-If simulation.
 
-- Provide recommendations and improvement actions.
+\- Provide recommendations and improvement actions.
 
-- Provide an integrated decision-support interface.
+\- Provide an integrated decision-support interface.
 
 The current working research direction is:
 
-\***\*Domain-Constrained Failure Intelligence System (DC-FIS)\*\***
+\\\***\*\*\\\*Domain-Constrained Failure Intelligence System (DC-FIS)\\\*\\\*\*\***
 
 This is a working research name only. No novelty claim should be made until the literature review is completed.
 
-**---**
+**\*\*---\*\***
 
-**# 2. Overall System Architecture**
+**\*\*# 2. Overall System Architecture\*\***
 
 Current pipeline:
 
@@ -112,63 +112,63 @@ Recommendations / What-If / Decision Support
 
 Main components:
 
-- React frontend
+\- React frontend
 
-- FastAPI backend
+\- FastAPI backend
 
-- Domain-specific Random Forest models
+\- Domain-specific Random Forest models
 
-- Failure-profile analytics using K-Means
+\- Failure-profile analytics using K-Means
 
-- Domain constraint engine
+\- Domain constraint engine
 
-- Counterfactual candidate sampler
+\- Counterfactual candidate sampler
 
-- Profile-guided counterfactual engine
+\- Profile-guided counterfactual engine
 
-- Recommendation system
+\- Recommendation system
 
-- What-If simulation
+\- What-If simulation
 
-- Automated four-domain smoke test
+\- Automated four-domain smoke test
 
-**---**
+**\*\*---\*\***
 
-**# 3. Domains**
+**\*\*# 3. Domains\*\***
 
-**## 3.1 Student**
+**\*\*## 3.1 Student\*\***
 
 Dataset:
 
-`data/student/student-mat.csv`
+\`data/student/student-mat.csv\`
 
 Dataset size:
 
-- 395 records
+\- 395 records
 
 Main prediction features:
 
-- absences
+\- absences
 
-- studytime
+\- studytime
 
-- failures
+\- failures
 
-- G1
+\- G1
 
-- G2
+\- G2
 
 Target:
 
-- `G3 < 10` → Exam Failure
+\- \`G3 < 10\` → Exam Failure
 
-- otherwise → Passed
+\- otherwise → Passed
 
 Class distribution:
 
-- Passed: 265
+\- Passed: 265
 
-- Exam Failure: 130
+\- Exam Failure: 130
 
 Important research consideration:
 
@@ -176,135 +176,135 @@ G1 and G2 are previous academic grades and therefore the prediction time point m
 
 Current actionable features:
 
-- absences
+\- absences
 
-- studytime
+\- studytime
 
 Current immutable features:
 
-- failures
+\- failures
 
-- G1
+\- G1
 
-- G2
+\- G2
 
 Desired counterfactual outcome:
 
-- Passed
+\- Passed
 
-**---**
+**\*\*---\*\***
 
-**## 3.2 Software**
+**\*\*## 3.2 Software\*\***
 
 Dataset:
 
-`data/software/Mozilla.csv`
+\`data/software/Mozilla.csv\`
 
 Original dataset size:
 
-- 4165 records
+\- 4165 records
 
 After target cleaning:
 
-- 3451 records
+\- 3451 records
 
 Target:
 
-`rs`
+\`rs\`
 
 Standardized target:
 
-`Failure_Type`
+\`Failure_Type\`
 
 Current classes include:
 
-- FIXED
+\- FIXED
 
-- DUPLICATE
+\- DUPLICATE
 
-- INCOMPLETE
+\- INCOMPLETE
 
-- INVALID
+\- INVALID
 
-- WORKSFORME
+\- WORKSFORME
 
-- WONTFIX
+\- WONTFIX
 
-- INACTIVE
+\- INACTIVE
 
-- MOVED
+\- MOVED
 
 Important data issues:
 
-- 714 records were removed because of missing/blank/NaN-like target values.
+\- 714 records were removed because of missing/blank/NaN-like target values.
 
-- Strong class imbalance exists.
+\- Strong class imbalance exists.
 
-- Minority classes are very small.
+\- Minority classes are very small.
 
-- Missing/Unknown semantics need further investigation.
+\- Missing/Unknown semantics need further investigation.
 
-- Weighted metrics alone are not sufficient.
+\- Weighted metrics alone are not sufficient.
 
 Cleaned Software model removes:
 
-- `re`
+\- \`re\`
 
-- `at`
+\- \`at\`
 
 These were treated as username/identity-like metadata.
 
 Preliminary actionable features:
 
-- pr
+\- pr
 
-- cl
+\- cl
 
-- rp
+\- rp
 
-- os
+\- os
 
-- bs
+\- bs
 
-- bsr
+\- bsr
 
 Immutable features include:
 
-- pd
+\- pd
 
-- co
+\- co
 
 Desired counterfactual outcome:
 
-- FIXED
+\- FIXED
 
 The exact actionability rules must be justified during the research phase.
 
-**---**
+**\*\*---\*\***
 
-**## 3.3 Jobs**
+**\*\*## 3.3 Jobs\*\***
 
 Dataset:
 
-`data/jobs/ai_resume_screening.csv`
+\`data/jobs/ai_resume_screening.csv\`
 
 Dataset size:
 
-- 30,000 records
+\- 30,000 records
 
 Main features:
 
-- years_experience
+\- years_experience
 
-- skills_match_score
+\- skills_match_score
 
-- education_level
+\- education_level
 
-- project_count
+\- project_count
 
-- resume_length
+\- resume_length
 
-- github_activity
+\- github_activity
 
 Target:
 
@@ -312,387 +312,387 @@ Shortlisted
 
 Mapped to:
 
-- Selected
+\- Selected
 
-- Rejected
+\- Rejected
 
 Class distribution:
 
-- Selected: 20,966
+\- Selected: 20,966
 
-- Rejected: 9,034
+\- Rejected: 9,034
 
 Preliminary actionable features:
 
-- skills_match_score
+\- skills_match_score
 
-- project_count
+\- project_count
 
-- resume_length
+\- resume_length
 
-- github_activity
+\- github_activity
 
 Immutable features:
 
-- years_experience
+\- years_experience
 
-- education_level
+\- education_level
 
 Desired counterfactual outcome:
 
-- Selected
+\- Selected
 
-**---**
+**\*\*---\*\***
 
-**## 3.4 Projects**
+**\*\*## 3.4 Projects\*\***
 
 Dataset:
 
-`data/projects/Project Management Dataset.csv`
+\`data/projects/Project Management Dataset.csv\`
 
 Dataset size:
 
-- 99 records
+\- 99 records
 
 Main features:
 
-- Complexity
+\- Complexity
 
-- Project Type
+\- Project Type
 
-- Region
+\- Region
 
-- Department
+\- Department
 
-- Project Cost
+\- Project Cost
 
-- Project Benefit
+\- Project Benefit
 
-- Completion%
+\- Completion%
 
-- Phase
+\- Phase
 
-- Year
+\- Year
 
-- Month
+\- Month
 
 Target classes:
 
-- Completed
+\- Completed
 
-- Cancelled
+\- Cancelled
 
-- In-Progress
+\- In-Progress
 
-- On-Hold
+\- On-Hold
 
 Class distribution:
 
-- Completed: 30
+\- Completed: 30
 
-- Cancelled: 27
+\- Cancelled: 27
 
-- In-Progress: 25
+\- In-Progress: 25
 
-- On-Hold: 17
+\- On-Hold: 17
 
 Preliminary actionable features:
 
-- Complexity
+\- Complexity
 
-- Project Cost
+\- Project Cost
 
-- Project Benefit
+\- Project Benefit
 
-- Completion%
+\- Completion%
 
-- Phase
+\- Phase
 
 Preliminary immutable features:
 
-- Project Type
+\- Project Type
 
-- Region
+\- Region
 
-- Department
+\- Department
 
-- Year
+\- Year
 
-- Month
+\- Month
 
 Desired counterfactual outcome:
 
-- Completed
+\- Completed
 
 Important research issues:
 
-- Dataset is very small.
+\- Dataset is very small.
 
-- Completion% may create temporal leakage depending on prediction time.
+\- Completion% may create temporal leakage depending on prediction time.
 
-- Project Cost and Project Benefit require semantic/ablation analysis.
+\- Project Cost and Project Benefit require semantic/ablation analysis.
 
-- Stronger or repeated cross-validation should be considered.
+\- Stronger or repeated cross-validation should be considered.
 
-- Actionability of Phase and Completion% must be justified.
+\- Actionability of Phase and Completion% must be justified.
 
-**---**
+**\*\*---\*\***
 
-**# 4. Prediction Models**
+**\*\*# 4. Prediction Models\*\***
 
 The current production architecture uses domain-specific training pipelines.
 
 General preprocessing:
 
-- Numeric median imputation
+\- Numeric median imputation
 
-- Categorical most-frequent imputation
+\- Categorical most-frequent imputation
 
-- One-hot encoding for categorical variables
+\- One-hot encoding for categorical variables
 
-- `handle_unknown="ignore"`
+\- \`handle_unknown="ignore"\`
 
 Original Random Forest baseline:
 
-- `n_estimators=200`
+\- \`n_estimators=200\`
 
-- `random_state=42`
+\- \`random_state=42\`
 
-- `n_jobs=-1`
+\- \`n_jobs=-1\`
 
 Train/test split:
 
-- 80/20
+\- 80/20
 
-- stratified where applicable
+\- stratified where applicable
 
-- `random_state=42`
+\- \`random_state=42\`
 
-**---**
+**\*\*---\*\***
 
-**# 5. Three-Way Random Forest Experiment**
+**\*\*# 5. Three-Way Random Forest Experiment\*\***
 
 The following experiment has already been completed.
 
 Models:
 
-1. Original Random Forest
+1\. Original Random Forest
 
-2. Optimized Random Forest
+2\. Optimized Random Forest
 
-3. Cleaned Random Forest
+3\. Cleaned Random Forest
 
 Optimization:
 
-- RandomizedSearchCV
+\- RandomizedSearchCV
 
-- 30 random configurations
+\- 30 random configurations
 
-- 5-fold StratifiedKFold
+\- 5-fold StratifiedKFold
 
-- shuffle=True
+\- shuffle=True
 
-- random_state=42
+\- random_state=42
 
-- weighted F1 used as optimization scoring
+\- weighted F1 used as optimization scoring
 
 Parameters included:
 
-- n_estimators
+\- n_estimators
 
-- max_depth
+\- max_depth
 
-- min_samples_split
+\- min_samples_split
 
-- min_samples_leaf
+\- min_samples_leaf
 
-- max_features
+\- max_features
 
-- class_weight
+\- class_weight
 
 Saved comparison:
 
-`backend/ml/model_comparison_results.csv`
+\`backend/ml/model_comparison_results.csv\`
 
 Saved models:
 
-- student_original_rf.pkl
+\- student_original_rf.pkl
 
-- student_optimized_rf.pkl
+\- student_optimized_rf.pkl
 
-- student_cleaned_rf.pkl
+\- student_cleaned_rf.pkl
 
-- software_original_rf.pkl
+\- software_original_rf.pkl
 
-- software_optimized_rf.pkl
+\- software_optimized_rf.pkl
 
-- software_cleaned_rf.pkl
+\- software_cleaned_rf.pkl
 
-- jobs_original_rf.pkl
+\- jobs_original_rf.pkl
 
-- jobs_optimized_rf.pkl
+\- jobs_optimized_rf.pkl
 
-- jobs_cleaned_rf.pkl
+\- jobs_cleaned_rf.pkl
 
-- projects_original_rf.pkl
+\- projects_original_rf.pkl
 
-- projects_optimized_rf.pkl
+\- projects_optimized_rf.pkl
 
-- projects_cleaned_rf.pkl
+\- projects_cleaned_rf.pkl
 
-**---**
+**\*\*---\*\***
 
-**# 6. Completed Model Results**
+**\*\*# 6. Completed Model Results\*\***
 
-**## Student**
+**\*\*## Student\*\***
 
-**### Original RF**
+**\*\*### Original RF\*\***
 
-- Accuracy: 0.8861
+\- Accuracy: 0.8861
 
-- Precision: 0.8917
+\- Precision: 0.8917
 
-- Recall: 0.8861
+\- Recall: 0.8861
 
-- Weighted F1: 0.8875
+\- Weighted F1: 0.8875
 
-- Balanced Accuracy: 0.8857
+\- Balanced Accuracy: 0.8857
 
-**### Optimized RF**
+**\*\*### Optimized RF\*\***
 
-- Accuracy: 0.8861
+\- Accuracy: 0.8861
 
-- Precision: 0.8977
+\- Precision: 0.8977
 
-- Recall: 0.8861
+\- Recall: 0.8861
 
-- Weighted F1: 0.8883
+\- Weighted F1: 0.8883
 
-- Balanced Accuracy: 0.8955
+\- Balanced Accuracy: 0.8955
 
-- CV weighted F1: 0.9310
+\- CV weighted F1: 0.9310
 
-**### Cleaned RF**
+**\*\*### Cleaned RF\*\***
 
-- Same as Original for the current feature-cleaning setup.
+\- Same as Original for the current feature-cleaning setup.
 
-**---**
+**\*\*---\*\***
 
-**## Software**
+**\*\*## Software\*\***
 
-**### Original RF**
+**\*\*### Original RF\*\***
 
-- Accuracy: 0.7685
+\- Accuracy: 0.7685
 
-- Precision: 0.7423
+\- Precision: 0.7423
 
-- Recall: 0.7685
+\- Recall: 0.7685
 
-- Weighted F1: 0.7498
+\- Weighted F1: 0.7498
 
-- Balanced Accuracy: 0.4107
+\- Balanced Accuracy: 0.4107
 
-**### Optimized RF**
+**\*\*### Optimized RF\*\***
 
-- Accuracy: 0.7410
+\- Accuracy: 0.7410
 
-- Precision: 0.7527
+\- Precision: 0.7527
 
-- Recall: 0.7410
+\- Recall: 0.7410
 
-- Weighted F1: 0.7430
+\- Weighted F1: 0.7430
 
-- Balanced Accuracy: 0.4949
+\- Balanced Accuracy: 0.4949
 
-- CV weighted F1: 0.7264
+\- CV weighted F1: 0.7264
 
-**### Cleaned RF**
+**\*\*### Cleaned RF\*\***
 
-- Accuracy: 0.7178
+\- Accuracy: 0.7178
 
-- Precision: 0.6756
+\- Precision: 0.6756
 
-- Recall: 0.7178
+\- Recall: 0.7178
 
-- Weighted F1: 0.6821
+\- Weighted F1: 0.6821
 
-- Balanced Accuracy: 0.3815
+\- Balanced Accuracy: 0.3815
 
 Important:
 
 Software requires class-wise and macro-level analysis because of strong class imbalance.
 
-**---**
+**\*\*---\*\***
 
-**## Jobs**
+**\*\*## Jobs\*\***
 
-**### Original RF**
+**\*\*### Original RF\*\***
 
-- Accuracy: 0.8983
+\- Accuracy: 0.8983
 
-- Precision: 0.8975
+\- Precision: 0.8975
 
-- Recall: 0.8983
+\- Recall: 0.8983
 
-- Weighted F1: 0.8978
+\- Weighted F1: 0.8978
 
-- Balanced Accuracy: 0.8737
+\- Balanced Accuracy: 0.8737
 
-**### Optimized RF**
+**\*\*### Optimized RF\*\***
 
-- Accuracy: 0.9032
+\- Accuracy: 0.9032
 
-- Precision: 0.9023
+\- Precision: 0.9023
 
-- Recall: 0.9032
+\- Recall: 0.9032
 
-- Weighted F1: 0.9025
+\- Weighted F1: 0.9025
 
-- Balanced Accuracy: 0.8788
+\- Balanced Accuracy: 0.8788
 
-- CV weighted F1: 0.9064
+\- CV weighted F1: 0.9064
 
-**### Cleaned RF**
+**\*\*### Cleaned RF\*\***
 
-- Same as Original for the current cleaning setup.
+\- Same as Original for the current cleaning setup.
 
-**---**
+**\*\*---\*\***
 
-**## Projects**
+**\*\*## Projects\*\***
 
-**### Original RF**
+**\*\*### Original RF\*\***
 
-- Accuracy: 0.6000
+\- Accuracy: 0.6000
 
-- Precision: 0.5750
+\- Precision: 0.5750
 
-- Recall: 0.6000
+\- Recall: 0.6000
 
-- Weighted F1: 0.5825
+\- Weighted F1: 0.5825
 
-- Balanced Accuracy: 0.5167
+\- Balanced Accuracy: 0.5167
 
-**### Optimized RF**
+**\*\*### Optimized RF\*\***
 
-- Accuracy: 0.6000
+\- Accuracy: 0.6000
 
-- Precision: 0.6381
+\- Precision: 0.6381
 
-- Recall: 0.6000
+\- Recall: 0.6000
 
-- Weighted F1: 0.6096
+\- Weighted F1: 0.6096
 
-- Balanced Accuracy: 0.5167
+\- Balanced Accuracy: 0.5167
 
-- CV weighted F1: 0.5440
+\- CV weighted F1: 0.5440
 
-**### Cleaned RF**
+**\*\*### Cleaned RF\*\***
 
-- Same as Original for the current cleaning setup.
+\- Same as Original for the current cleaning setup.
 
-**---**
+**\*\*---\*\***
 
-**# 7. Interpretation of the Three-Way Experiment**
+**\*\*# 7. Interpretation of the Three-Way Experiment\*\***
 
 The optimized model should be treated as a model-selection/baseline optimization experiment.
 
@@ -700,39 +700,39 @@ It must NOT be presented as a novel machine-learning algorithm.
 
 Current best weighted-F1 models:
 
-- Student → Optimized RF
+\- Student → Optimized RF
 
-- Software → Original RF
+\- Software → Original RF
 
-- Jobs → Optimized RF
+\- Jobs → Optimized RF
 
-- Projects → Optimized RF
+\- Projects → Optimized RF
 
 However, model selection should not rely only on weighted F1.
 
 The research evaluation should additionally consider:
 
-- Macro F1
+\- Macro F1
 
-- Balanced Accuracy
+\- Balanced Accuracy
 
-- Per-class precision
+\- Per-class precision
 
-- Per-class recall
+\- Per-class recall
 
-- Per-class F1
+\- Per-class F1
 
-- Failure-focused recall/F1
+\- Failure-focused recall/F1
 
-- ROC-AUC where appropriate
+\- ROC-AUC where appropriate
 
-- PR-AUC where appropriate
+\- PR-AUC where appropriate
 
-- Cross-validation stability
+\- Cross-validation stability
 
-**---**
+**\*\*---\*\***
 
-**# 8. Failure Profile Analysis**
+**\*\*# 8. Failure Profile Analysis\*\***
 
 Failure profiles are generated using K-Means clustering.
 
@@ -740,21 +740,21 @@ The profile system identifies historical groups with similar feature characteris
 
 Profile information can include:
 
-- profile ID
+\- profile ID
 
-- sample count
+\- sample count
 
-- feature means
+\- feature means
 
-- feature medians
+\- feature medians
 
-- failure count
+\- failure count
 
-- non-failure count
+\- non-failure count
 
-- failure rate
+\- failure rate
 
-- failure rate percentage
+\- failure rate percentage
 
 Profile guidance compares the current case with its assigned historical profile.
 
@@ -766,61 +766,61 @@ Profile guidance is used for model-based scenario analysis.
 
 It does NOT establish:
 
-- causality
+\- causality
 
-- intervention effectiveness in the real world
+\- intervention effectiveness in the real world
 
-- guaranteed failure prevention
+\- guaranteed failure prevention
 
-**---**
+**\*\*---\*\***
 
-**# 9. Profile-Guided Counterfactual System**
+**\*\*# 9. Profile-Guided Counterfactual System\*\***
 
 The current production counterfactual system supports:
 
-- desired outcome specification
+\- desired outcome specification
 
-- domain-specific actionable features
+\- domain-specific actionable features
 
-- immutable features
+\- immutable features
 
-- training-data-derived candidate values
+\- training-data-derived candidate values
 
-- numeric candidate sampling
+\- numeric candidate sampling
 
-- categorical candidate sampling
+\- categorical candidate sampling
 
-- domain feasibility constraints
+\- domain feasibility constraints
 
-- profile-guided feature prioritization
+\- profile-guided feature prioritization
 
-- risk-reduction calculation
+\- risk-reduction calculation
 
-- prediction transition detection
+\- prediction transition detection
 
-- successful counterfactual detection
+\- successful counterfactual detection
 
-- risk-reduction-only scenarios
+\- risk-reduction-only scenarios
 
-- already-desired outcome handling
+\- already-desired outcome handling
 
 Production implementation:
 
-`backend/counterfactual/generator.py`
+\`backend/counterfactual/generator.py\`
 
 Supporting components:
 
-`backend/counterfactual/candidate_sampler.py`
+\`backend/counterfactual/candidate_sampler.py\`
 
-`backend/counterfactual/constraint_engine.py`
+\`backend/counterfactual/constraint_engine.py\`
 
-`backend/analytics/profile_guidance.py`
+\`backend/analytics/profile_guidance.py\`
 
-`backend/analytics/failure_profiles.py`
+\`backend/analytics/failure_profiles.py\`
 
-**---**
+**\*\*---\*\***
 
-**# 10. Counterfactual Interpretation**
+**\*\*# 10. Counterfactual Interpretation\*\***
 
 Counterfactual results are model-based scenarios.
 
@@ -838,25 +838,25 @@ The tested input change caused the trained model's predicted class to change to 
 
 This does NOT mean:
 
-- the change is causally responsible for success;
+\- the change is causally responsible for success;
 
-- the change will definitely work in reality;
+\- the change will definitely work in reality;
 
-- the model has discovered a causal relationship.
+\- the model has discovered a causal relationship.
 
 These limitations must be explicitly stated in the research.
 
-**---**
+**\*\*---\*\***
 
-**# 11. Production Smoke Test**
+**\*\*# 11. Production Smoke Test\*\***
 
 Automated test:
 
-`scripts/system_smoke_test.py`
+\`scripts/system_smoke_test.py\`
 
 Latest successful result:
 
-```text
+\`\`\`text
 
 [PASS] Student:
 
@@ -900,18 +900,19 @@ cf_status=successful_counterfactual_found
 
 All four domains passed the production smoke test.
 
-```
+\`\`\`
 
 This confirms that the integrated backend pipeline is functioning across
+
 all four domains.
 
----
+**---**
 
-# 12. Frontend Verification
+**# 12. Frontend Verification**
 
 The frontend was manually tested through the React interface.
 
-## Student
+**## Student**
 
 Test record:
 
@@ -945,9 +946,9 @@ Status:
 
 PASS
 
----
+**---**
 
-## Jobs
+**## Jobs**
 
 Test record:
 
@@ -989,12 +990,14 @@ Status:
 
 PASS
 
----
+**---**
 
-30. Product Development Update --- 2026-09-25
+30\. Product Development Update --- 2026-09-25
 
 Today's work temporarily moved the project from research mode back into
+
 product-development mode so that the platform could support real
+
 multi-user usage.
 
 30.1 Authentication and User Accounts
@@ -1054,6 +1057,7 @@ sessions
 analyses
 
 The database is generated locally at runtime and should not be committed
+
 to source control.
 
 30.3 Backend API Changes
@@ -1073,6 +1077,7 @@ GET /dashboard
 GET /history
 
 Prediction, counterfactual, What-If, and recommendation operations are
+
 protected by authentication.
 
 Successful analysis results are associated with the authenticated user.
@@ -1080,6 +1085,7 @@ Successful analysis results are associated with the authenticated user.
 30.4 Frontend Changes
 
 frontend/src/App.jsx and frontend/src/App.css were substantially
+
 updated.
 
 The frontend now provides:
@@ -1118,20 +1124,22 @@ Responsive layout
 
 During testing, the frontend initially called:
 
-http://127.0.0.1:8000
+http\://127.0.0.1:8000
 
 while the browser frontend was running on:
 
-http://localhost:5173
+http\://localhost:5173
 
 This caused the session cookie not to be sent correctly and produced
+
 401 Unauthorized responses.
 
 The frontend API base was corrected to use:
 
-http://localhost:8000
+http\://localhost:8000
 
 After re-authentication, /auth/me and protected analysis requests
+
 worked correctly.
 
 30.6 Manual Functional Verification
@@ -1175,15 +1183,17 @@ G1 = 12
 G2 = 12
 
 returned a valid prediction after the authentication integration was
+
 corrected.
 
 30.7 Current Non-Blocking Warning
 
 Browser developer tools currently show:
 
-Deprecated: escaping deep link whitespace with \_ is unsupported and will be removed in a future 5.x release. Use %20 instead.
+Deprecated: escaping deep link whitespace with \\\_ is unsupported and will be removed in a future 5.x release. Use %20 instead.
 
 This is being treated as a dependency/tooling deprecation warning
+
 because the application functionality is working correctly.
 
 It is not currently considered a project failure.
@@ -1217,9 +1227,10 @@ Updated distributable baseline:
 AI-Failure-Intelligence-Platform-user-dashboard-v1.zip
 
 The distributable excludes the runtime SQLite database, frontend
+
 dependency directory, and Python cache files.
 
-31. Current Project State After Product Update
+31\. Current Project State After Product Update
 
 Product Development
 
@@ -1289,9 +1300,10 @@ Research Phase: PAUSED UNTIL USER RESUMES IT
 
 The project is intentionally stopping here for today's session.
 
-32. When to Continue the Research
+32\. When to Continue the Research
 
 When the user says to continue the research, resume from the
+
 research phase rather than restarting product development.
 
 The research continuation order is:
@@ -1323,6 +1335,7 @@ Discussion
 Thesis/paper writing
 
 The first research task when resuming should be a comprehensive
+
 literature review covering:
 
 failure prediction
@@ -1358,6 +1371,7 @@ profile-guided intervention
 The literature review must determine whether the combination of:
 
 failure profiles + domain constraints + profile-guided counterfactual
+
 intervention + quantitative risk reduction
 
 constitutes a genuine research gap.
@@ -1381,31 +1395,562 @@ When the user says something such as:
 use this project-progress document as the starting context.
 
 Do not restart the project from the beginning and do not immediately
+
 start coding.
 
 Resume at:
 
 Literature Review → Research Gap → Research Questions/Objectives →
+
 Experimental Methodology → Reproducible Experiments → Statistical
+
 Analysis → Results → Thesis/Paper
 
 The current product implementation should be treated as the working
+
 software baseline unless a genuine correctness, reproducibility, or
+
 research-methodology issue requires a change.
 
-33. Session Stop Point --- 2026-09-25
+33\. Session Stop Point --- 2026-09-25
 
 Today's session is intentionally closed after successful product
+
 verification.
 
 Next time, the user can choose either:
 
 A. Continue product development
+
 or
+
 B. Continue the research
 
 If the user chooses research, start with the literature review and
+
 research-gap investigation described in Section 32.
 
 If the user chooses product development, use the current user-dashboard
-version as the starting software baseline.
+
+## version as the starting software baseline.
+
+# 34. Product Development Stop Point — 2026-09-28
+
+The product-development phase was continued after the previous 2026-09-25
+baseline and is now intentionally paused again.
+
+## 34.1 Backend Stabilization
+
+During frontend/backend startup verification, two import issues were found
+and corrected.
+
+First, the backend must be started from the project root using:
+
+`uvicorn backend.api:app --reload --host 127.0.0.1 --port 8000`
+
+rather than importing `api` directly from the `backend` directory.
+
+Second, `backend/api.py` referenced `get_analysis()` for individual history
+records while `backend/auth.py` did not yet contain that function.
+
+The missing function was added with user-ownership filtering:
+
+`WHERE id = ? AND user_id = ?`
+
+This preserves per-user history isolation.
+
+The backend was then successfully started and reached:
+
+`Application startup complete.`
+
+## 34.2 Frontend Verification
+
+The React frontend was successfully started with the Vite development
+server.
+
+The authenticated product flow was tested through the browser.
+
+The Student analysis interface exposed two UI issues:
+
+1. The analysis result layout had an alignment problem caused by the
+   placement of the What-If section.
+2. Student What-If was incorrectly limited to G2.
+
+The Student domain configuration defines:
+
+Actionable:
+
+- absences
+- studytime
+
+Immutable:
+
+- failures
+- G1
+- G2
+
+Therefore G2 must not be presented as an intervention variable.
+
+The What-If design was corrected so that the user selects an actionable
+feature rather than being forced to change G2.
+
+The intended What-If behavior across domains is:
+
+Student:
+
+- absences
+- studytime
+
+Jobs:
+
+- skills_match_score
+- project_count
+- resume_length
+- github_activity
+
+Software:
+
+- domain-approved actionable software features
+
+Projects:
+
+- domain-approved actionable project features
+
+The backend constraint system remains the authoritative validation layer;
+frontend controls must not be treated as the only protection against
+immutable-feature changes.
+
+## 34.3 User Analytics and Visualization
+
+The product-development direction was extended to provide richer user-facing
+analytics.
+
+The dashboard/history interface is intended to include visual summaries
+such as:
+
+- domain distribution pie/donut chart
+- analyses-by-domain bar chart
+- recent probability/risk trend
+- class-probability visualizations
+- analysis history visual summaries
+
+The visualization layer should remain descriptive and should not imply that
+model probabilities are causal effects or real-world outcome guarantees.
+
+## 34.4 Current Product Baseline
+
+The current product baseline contains:
+
+- Four-domain ML prediction
+- Random Forest models
+- Failure profiles
+- Profile-guided feature prioritization
+- Domain constraints
+- Counterfactual generation
+- Risk-reduction evaluation
+- Prediction-transition detection
+- Recommendations
+- What-If simulation
+- FastAPI backend
+- React frontend
+- Authentication
+- User accounts
+- Session management
+- Personalized dashboard
+- User-specific history
+- User isolation
+- SQLite persistence
+- Individual history retrieval
+- Responsive frontend
+- User-facing analytical visualizations
+
+Current backend startup status:
+
+PASS
+
+Current frontend startup status:
+
+PASS
+
+Current product-development status:
+
+PAUSED AFTER CURRENT SCOPE VERIFICATION
+
+No further product-development work should be started automatically when
+the user says to continue the research.
+
+---
+
+# 35. Research Continuation — Starting Point for the Next Research Phase
+
+The next phase is research, not additional feature development.
+
+The product implementation above should be treated as the working software
+baseline for experiments.
+
+The research must begin with evidence gathering rather than with a novelty
+claim.
+
+## 35.1 Research Continuation Order
+
+The research workflow is:
+
+1. Comprehensive literature review
+2. Research-gap identification
+3. Research questions
+4. Research objectives
+5. Formal problem definition
+6. Experimental protocol
+7. Dataset and preprocessing justification
+8. Predictive-model evaluation
+9. Failure-profile evaluation
+10. Counterfactual ablation study
+11. Constraint-ablation study
+12. Profile-guidance evaluation
+13. Intervention/risk-reduction evaluation
+14. Cross-domain comparison
+15. Statistical analysis
+16. Threats to validity and limitations
+17. Results
+18. Discussion
+19. Thesis/paper methodology
+20. Thesis/paper results and discussion
+21. Final contribution statement
+
+## 35.2 First Task When Research Resumes
+
+The first task must be a comprehensive literature review.
+
+The review should cover at least:
+
+### Failure and outcome prediction
+
+- student academic failure prediction
+- software defect/failure prediction
+- employee/job/resume outcome prediction
+- project failure/outcome prediction
+- heterogeneous-domain predictive decision support
+
+### Failure profiling
+
+- failure pattern mining
+- risk profiling
+- clustering for failure analysis
+- subgroup/risk-profile identification
+- profile-based decision support
+
+### Explainable AI
+
+- feature importance
+- local explanations
+- interpretable risk explanations
+- example-based explanations
+
+### Counterfactual explanations
+
+- counterfactual explanations
+- actionable counterfactuals
+- feasible counterfactuals
+- constrained counterfactual explanations
+- recourse
+- algorithmic recourse
+- cost-aware recourse
+- feasibility-aware recourse
+
+### Intervention and decision support
+
+- intervention recommendation
+- risk-reduction recommendations
+- decision-support systems
+- human-centered predictive analytics
+- profile-guided intervention
+- what-if analysis
+
+### Evaluation methodology
+
+- counterfactual quality metrics
+- validity
+- proximity
+- sparsity
+- diversity
+- feasibility
+- actionability
+- stability
+- risk reduction
+- prediction transition
+- calibration
+- subgroup performance
+- cross-domain robustness
+
+## 35.3 Research-Gap Question
+
+The literature review must determine whether the following combination is
+actually underexplored:
+
+Failure profiles
+
+- domain constraints
+- profile-guided actionable counterfactual intervention
+- quantitative model-predicted risk reduction
+- multi-domain decision support
+
+This combination must be investigated against existing literature.
+
+Do not describe the system as novel merely because the individual
+components are combined.
+
+The research contribution must be based on what the literature establishes.
+
+## 35.4 Research Questions to Develop
+
+Candidate research questions should be refined only after the literature
+review.
+
+Potential directions include:
+
+RQ1:
+How effectively can machine-learning models predict failure/outcome classes
+across heterogeneous domains?
+
+RQ2:
+Can historical failure profiles provide useful information for prioritizing
+actionable features in failure cases?
+
+RQ3:
+Does profile-guided feature prioritization improve the quality or efficiency
+of constrained counterfactual generation compared with non-profile-guided
+counterfactual generation?
+
+RQ4:
+How do domain constraints affect counterfactual feasibility, sparsity,
+risk reduction, and prediction-transition rates?
+
+RQ5:
+Can the proposed decision-support pipeline produce measurable reductions in
+model-predicted failure risk while respecting domain-specific actionability
+constraints?
+
+RQ6:
+How consistent is the proposed approach across Student, Software, Jobs,
+and Projects domains?
+
+These are candidate research questions only. They must be revised after the
+literature review and formal problem definition.
+
+## 35.5 Experimental Plan
+
+The eventual research experiments should include at least:
+
+### Experiment A — Predictive baseline
+
+Compare:
+
+- baseline Random Forest
+- optimized Random Forest
+- cleaned/feature-restricted Random Forest where applicable
+
+Report:
+
+- accuracy
+- macro F1
+- weighted F1
+- balanced accuracy
+- per-class precision
+- per-class recall
+- per-class F1
+- failure-focused metrics
+- ROC-AUC where appropriate
+- PR-AUC where appropriate
+- cross-validation stability
+
+### Experiment B — Failure-profile analysis
+
+Measure:
+
+- cluster composition
+- profile size
+- failure rate
+- profile separation
+- feature distributions
+- stability across repeated clustering runs where appropriate
+
+### Experiment C — Counterfactual ablation
+
+Compare at minimum:
+
+1. Unconstrained/non-profile-guided candidate generation
+2. Constraint-aware candidate generation
+3. Profile-guided candidate generation
+4. Profile-guided + constraint-aware generation
+
+Evaluate:
+
+- validity
+- feasibility
+- sparsity
+- proximity
+- diversity where applicable
+- risk reduction
+- successful prediction transition
+- number of candidates evaluated
+- computational cost
+
+### Experiment D — Intervention evaluation
+
+Measure:
+
+- percentage of cases with feasible interventions
+- average risk reduction
+- median risk reduction
+- successful transition rate
+- risk-reduction-only rate
+- no-feasible-intervention rate
+
+Results must distinguish model-predicted risk reduction from real-world
+causal intervention effectiveness.
+
+### Experiment E — Cross-domain evaluation
+
+Compare behavior across:
+
+- Student
+- Software
+- Jobs
+- Projects
+
+The comparison should describe differences rather than assume that one
+domain is representative of all domains.
+
+## 35.6 Important Research Validity Issues
+
+Before final experiments, explicitly investigate:
+
+- target leakage
+- prediction-time definition
+- temporal leakage
+- train/test contamination
+- small-sample effects
+- class imbalance
+- calibration
+- feature actionability assumptions
+- immutable-feature assumptions
+- dataset-specific semantics
+- counterfactual distribution shift
+- causal interpretation
+- model dependence
+- random-seed sensitivity
+- clustering stability
+- repeated evaluation bias
+
+Specific concerns already identified:
+
+Student:
+
+- G1/G2 require a clearly defined prediction time point.
+
+Software:
+
+- severe class imbalance requires macro/per-class evaluation.
+- target cleaning and feature semantics need justification.
+
+Projects:
+
+- only 99 records.
+- Completion% may introduce temporal leakage.
+- Project Cost and Project Benefit require semantic/ablation analysis.
+- Phase and Completion% actionability must be justified.
+
+## 35.7 Research Reproducibility Requirements
+
+When research resumes, record:
+
+- dataset versions
+- preprocessing rules
+- train/test split seeds
+- cross-validation strategy
+- hyperparameter search space
+- selected model
+- clustering parameters
+- counterfactual candidate-generation parameters
+- constraint definitions
+- evaluation metrics
+- random seeds
+- software/package versions
+- experiment outputs
+- statistical tests
+- confidence intervals where appropriate
+
+All major research experiments should be reproducible from scripts rather
+than relying only on manual frontend testing.
+
+## 35.8 Interpretation Boundary
+
+The system provides model-based decision support.
+
+The research must clearly distinguish:
+
+Model prediction
+from
+model explanation
+from
+counterfactual scenario
+from
+model-predicted risk reduction
+from
+real-world causal intervention.
+
+A successful counterfactual transition means that the trained model changes
+its predicted class for the modified input.
+
+It does not establish that the proposed intervention would cause the real
+person, software issue, job applicant, or project to achieve that outcome.
+
+## 35.9 Research Resume Instruction
+
+When the user says:
+
+- "continue the research"
+- "resume the research"
+- "let's continue our research"
+- "start the literature review"
+- "continue from where we stopped"
+
+resume from this section.
+
+Do not restart product development.
+
+Do not immediately modify the application unless the research methodology
+requires a documented software change.
+
+The first action should be:
+
+Literature Review
+→ Research Gap
+→ Research Questions/Objectives
+→ Experimental Methodology
+→ Reproducible Experiments
+→ Statistical Analysis
+→ Results
+→ Thesis/Paper
+
+---
+
+# 36. Final Session Stop Point — 2026-09-28
+
+The current session is intentionally closed after product-development
+verification and UI refinement.
+
+The next session should begin from one of two explicit choices:
+
+A. Continue product development
+
+or
+
+B. Continue the research
+
+If the user chooses research, start with Section 35.1 and perform the
+literature review before making any novelty or contribution claim.
+
+If the user chooses product development, use the current authenticated
+user-dashboard implementation as the software baseline and do not restart
+the project from the original coding stage.
