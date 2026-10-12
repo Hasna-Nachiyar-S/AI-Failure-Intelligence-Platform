@@ -1954,3 +1954,258 @@ literature review before making any novelty or contribution claim.
 If the user chooses product development, use the current authenticated
 user-dashboard implementation as the software baseline and do not restart
 the project from the original coding stage.
+
+# 37. Next Product Development Phase — Comprehensive Code Reusability Audit
+
+## 37.1 Current Status
+
+The current project has completed its core multi-domain ML functionality, authentication, personalized dashboard, analysis history, counterfactual generation, What-If simulation, recommendations, and frontend/backend integration.
+
+A preliminary code-reusability refactor has also been completed.
+
+The preliminary refactor introduced shared frontend form components, centralized API utilities, shared domain configuration, reusable test inputs, and cleanup of empty or unused files.
+
+However, the preliminary refactor is not considered a complete code-reusability audit. Additional opportunities may exist across the backend, frontend, ML pipelines, analytics, counterfactual generation, recommendation system, testing, and configuration.
+
+The current working software baseline must be preserved before beginning further refactoring.
+
+## 37.2 Objective
+
+Conduct a comprehensive source-code audit to identify and safely reduce:
+
+- Duplicated functions and repeated business logic.
+- Repeated data-loading and preprocessing operations.
+- Similar ML training, prediction, and evaluation implementations.
+- Duplicated counterfactual and recommendation logic.
+- Repeated analytics calculations.
+- Repeated API validation and response-handling code.
+- Duplicate frontend components and UI logic.
+- Redundant tests and test fixtures.
+- Unused imports, dead code, obsolete scripts, and unnecessary files.
+- Scattered configuration values and duplicated domain definitions.
+- Unnecessary dependencies and inconsistent package versions.
+
+The objective is to improve maintainability, consistency, testability, and extensibility without sacrificing readability or domain-specific correctness.
+
+## 37.3 Recommended Implementation Order
+
+### Step 1 — Complete Source-Code Audit
+
+Inspect the entire project, including:
+
+- Backend API and authentication.
+- ML model management and prediction pipelines.
+- Data-loading and preprocessing modules.
+- Failure-profile analytics.
+- Counterfactual generation and constraint validation.
+- Recommendations and What-If simulation.
+- React components, pages, hooks, and utilities.
+- Training, evaluation, and testing scripts.
+- Configuration files, dependencies, and documentation.
+
+Identify duplicate logic, similar implementations, unused code, dependency issues, circular imports, and opportunities for shared utilities.
+
+For each proposed change, record the affected files, the duplication being addressed, the intended reusable component, and the potential behavioral risks.
+
+Do not assume two functions are redundant solely because their code looks similar. Verify their inputs, outputs, constraints, and domain-specific behavior.
+
+### Step 2 — Establish a Baseline
+
+Before changing implementation code:
+
+- Record the current project version and source-control state.
+- Run existing backend tests and four-domain smoke tests.
+- Run frontend build and lint checks where dependencies permit.
+- Record representative predictions and output structures.
+- Record existing API response formats and authentication behavior.
+- Record current counterfactual, recommendation, and What-If behavior.
+- Identify existing failures separately from regressions introduced by refactoring.
+
+Preserve the original project and keep the working baseline recoverable.
+
+### Step 3 — Refactor Shared Data-Loading and Preprocessing Logic
+
+Identify repeated CSV loading, schema validation, missing-value handling, categorical processing, numeric preprocessing, and feature validation.
+
+Introduce reusable utilities where appropriate while preserving domain-specific dataset schemas, target definitions, preprocessing rules, and leakage protections.
+
+Avoid changing training data or model behavior merely to make implementations look uniform.
+
+### Step 4 — Refactor ML Training, Prediction, and Evaluation
+
+Investigate opportunities to share:
+
+- Model loading and lifecycle management.
+- Prediction and probability calculation.
+- Reusable preprocessing pipelines.
+- Training and evaluation helpers.
+- Classification metrics and per-class reports.
+- Model configuration and artifact-path resolution.
+
+Keep domain-specific model parameters, target classes, feature definitions, and evaluation decisions configurable.
+
+Do not replace existing model artifacts or retrain models unless required and explicitly documented.
+
+### Step 5 — Refactor Failure Analytics
+
+Identify repeated implementations for:
+
+- Class and failure distributions.
+- Risk summaries.
+- Profile statistics.
+- Aggregate metrics.
+- Feature summaries.
+- Analysis-history statistics.
+
+Consolidate genuinely common calculations into reusable functions while retaining the semantics required by each domain.
+
+### Step 6 — Refactor Counterfactual and Constraint Logic
+
+Inspect the candidate sampler, constraint engine, profile guidance, counterfactual generator, and supporting analytics.
+
+Investigate shared implementations for:
+
+- Candidate generation and ranking.
+- Actionable and immutable feature validation.
+- Feasibility checks.
+- Risk-reduction calculation.
+- Prediction-transition detection.
+- Counterfactual quality metrics.
+- Result formatting.
+
+Preserve domain-specific actionability rules, allowed value ranges, target classes, and feasibility constraints.
+
+Do not present model-predicted risk reduction as proof of real-world causal effectiveness.
+
+### Step 7 — Refactor Recommendations and What-If Simulation
+
+Identify duplicated logic for actionable-feature selection, scenario evaluation, recommendation ranking, and result formatting.
+
+Reuse common algorithms where their semantics match. Keep domain-specific recommendation policies and constraints separate where necessary.
+
+Verify that What-If operations cannot bypass backend constraint validation or modify immutable features.
+
+### Step 8 — Refactor API and Authentication Utilities
+
+Review request validation, response formatting, exception handling, shared dependencies, and database access.
+
+Reduce duplication without changing:
+
+- Authentication requirements.
+- Session management.
+- User-specific data filtering.
+- User isolation.
+- Existing API routes and response contracts, unless a documented change is necessary.
+
+Preserve ownership checks for analysis-history retrieval and other user-specific records.
+
+### Step 9 — Refactor Frontend Components
+
+Investigate reusable components for:
+
+- Domain forms and field controls.
+- Loading and error states.
+- Prediction summaries.
+- Class-probability displays.
+- Recommendations and improvement actions.
+- Counterfactual results.
+- What-If controls.
+- Analytics charts.
+- History tables and dashboard summaries.
+
+Reuse components where behavior and presentation are sufficiently similar. Keep domain-specific labels, validation, and allowed intervention features configuration-driven.
+
+Avoid introducing unnecessary abstractions that make the React application harder to maintain.
+
+### Step 10 — Consolidate Tests and Fixtures
+
+Review the existing test suite and create reusable test fixtures and parameterized tests where appropriate.
+
+Ensure that shared tests cover all four domains:
+
+- Student.
+- Software.
+- Jobs.
+- Projects.
+
+Retain dedicated tests for domain-specific constraints, edge cases, authentication, user isolation, API validation, and counterfactual behavior.
+
+Do not delete a test merely because it overlaps with another test. Confirm that its coverage is preserved before removing it.
+
+### Step 11 — Review Configuration and Dependencies
+
+Centralize duplicated configuration where appropriate, including domain definitions, model paths, API settings, and shared constants.
+
+Inspect dependencies for actual usage, version compatibility, and unnecessary duplication.
+
+Do not combine frontend and backend dependencies into one environment when separate dependency management is more appropriate.
+
+Keep sensitive credentials and runtime databases out of distributable source archives.
+
+### Step 12 — Regression Testing and Final Verification
+
+After refactoring:
+
+- Run Python compilation checks.
+- Run the complete available backend test suite.
+- Run the four-domain system smoke test.
+- Run API and authentication tests.
+- Run counterfactual and recommendation tests.
+- Run frontend lint and production build checks.
+- Verify dashboard, history, and user-isolation behavior.
+- Compare representative predictions and response structures against the baseline.
+- Document intentional differences and any tests that could not be executed.
+
+Investigate any unexplained regression before declaring the refactor complete.
+
+### Step 13 — Package the Complete Project
+
+Create a complete distributable ZIP containing the updated source code, required datasets, model artifacts, configuration templates, scripts, and documentation.
+
+Exclude generated caches, installed dependency directories, local runtime databases, and secrets where appropriate.
+
+Include a refactoring report containing:
+
+- Modified files.
+- Added files.
+- Removed files.
+- Reusable components introduced.
+- Duplicated logic consolidated.
+- Tests executed and their results.
+- Known warnings and unresolved issues.
+- Instructions for installation and execution.
+
+Verify ZIP integrity and confirm that the archive contains the complete required project.
+
+## 37.4 Acceptance Criteria
+
+The code-reusability phase is complete only when:
+
+1. The full source tree has been inspected.
+2. Identified duplication has been reviewed and addressed where beneficial.
+3. Shared components have clear responsibilities and interfaces.
+4. Domain-specific rules and constraints remain correct.
+5. Authentication and user isolation continue to work.
+6. Existing prediction and response behavior is preserved unless changes are documented.
+7. Available backend and frontend verification checks have been run.
+8. Unavailable checks and unresolved issues are explicitly recorded.
+9. The complete project ZIP has been packaged and validated.
+10. A file-by-file change report and refactoring summary have been produced.
+
+The goal is not to eliminate every repeated line at any cost. The goal is to remove unnecessary duplication while keeping the platform understandable, reliable, and extensible.
+
+## 37.5 Current Next Action
+
+**Next task: Step 1 — Complete Source-Code Audit.**
+
+Start by inspecting the current complete project baseline and generating a file-by-file inventory of duplication and reusability opportunities.
+
+Do not immediately rewrite the entire application. First establish what can safely be shared, what must remain domain-specific, and which tests are needed to protect existing behavior.
+
+After the audit, implement the refactoring incrementally in the order defined above.
+
+**Current status:** Comprehensive reusability audit and second-stage refactoring — NOT YET STARTED.
+
+**Completion status:** Pending source-code audit, implementation, regression testing, and packaging.
+
+**Baseline rule:** Preserve the current authenticated four-domain platform as the starting point. Do not restart from the original coding stage or replace the existing application with a new implementation.

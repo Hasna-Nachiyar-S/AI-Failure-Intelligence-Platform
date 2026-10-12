@@ -2,6 +2,8 @@ import os
 import joblib
 import pandas as pd
 
+from backend.domain_config import normalize_domain as canonical_domain
+
 
 BASE_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..")
@@ -57,27 +59,11 @@ class DomainModelManager:
             self.models[domain] = joblib.load(path)
 
     def normalize_domain(self, domain):
+        try:
+            return canonical_domain(domain)
+        except ValueError as exc:
+            raise ValueError("Invalid domain.") from exc
 
-        if not domain:
-            raise ValueError(
-                "Domain is required."
-            )
-
-        value = str(domain).strip().lower()
-
-        mapping = {
-            "student": "Student",
-            "software": "Software",
-            "jobs": "Jobs",
-            "projects": "Projects"
-        }
-
-        if value not in mapping:
-            raise ValueError(
-                "Invalid domain."
-            )
-
-        return mapping[value]
 
     def get_model(self, domain):
 

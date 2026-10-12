@@ -12,5 +12,3 @@ def plot_pie(df, column):
 
     df[column].value_counts().plot(kind="pie")
     df["absences"].hist()
-
-

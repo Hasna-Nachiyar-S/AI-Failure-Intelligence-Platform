@@ -1,113 +1,26 @@
+"""Smoke-test recommendations using the shared, valid domain fixtures."""
+
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
+
 from backend.recommendation.recommender import Recommender
+from scripts.domain_cases import CASES
 
 
 def main():
-
-    print("=" * 60)
-    print("RECOMMENDATION ENGINE TEST")
-    print("=" * 60)
-
     recommender = Recommender()
-
-    # --------------------------------------------------
-    # Test Student
-    # --------------------------------------------------
-
-    student = {
-        "Domain": "Student",
-        "Severity": 2,
-        "Score": 8,
-        "Description": "Absences: 5, Study Time: 2"
-    }
-
-    print("\nSTUDENT TEST")
-    print("-" * 60)
-
-    result = recommender.analyze(
-        student
-    )
-
-    print(
-        "Prediction:",
-        result["prediction"]["failure_type"]
-    )
-
-    print(
-        "Cluster:",
-        result["cluster"]["cluster_id"]
-    )
-
-    print("\nRecommendations:")
-
-    for recommendation in result[
-        "recommendations"
-    ]:
-
-        print(
-            "-",
-            recommendation
-        )
-
-    print("\nImprovement Actions:")
-
-    for action in result[
-        "improvement_actions"
-    ]["actions"]:
-
-        print(
-            "-",
-            action["action"]
-        )
-
-    # --------------------------------------------------
-    # Test Jobs
-    # --------------------------------------------------
-
-    jobs = {
-        "Domain": "Jobs",
-        "Severity": 45,
-        "Score": 45,
-        "Description": "Experience 2 years"
-    }
-
-    print("\n\nJOB TEST")
-    print("-" * 60)
-
-    result = recommender.analyze(
-        jobs
-    )
-
-    print(
-        "Prediction:",
-        result["prediction"]["failure_type"]
-    )
-
-    print(
-        "Cluster:",
-        result["cluster"]["cluster_id"]
-    )
-
-    print("\nRecommendations:")
-
-    for recommendation in result[
-        "recommendations"
-    ]:
-
-        print(
-            "-",
-            recommendation
-        )
-
-    # --------------------------------------------------
-    # Test completed
-    # --------------------------------------------------
-
-    print("\n")
-    print("=" * 60)
-    print("RECOMMENDATION TEST COMPLETED")
-    print("=" * 60)
+    for domain in ("Student", "Jobs"):
+        result = recommender.recommend(CASES[domain])
+        assert result["domain"] == domain
+        assert result["prediction"]["failure_type"]
+        assert isinstance(result["recommendations"], list)
+        assert "improvement_actions" in result
+        print(f"[PASS] {domain}: {result['prediction']['failure_type']}")
+    print("Recommendation smoke tests passed.")
 
 
 if __name__ == "__main__":
-
     main()

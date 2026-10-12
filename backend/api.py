@@ -55,6 +55,8 @@ from backend.auth import (
 import json
 import os
 
+from backend.domain_config import DOMAIN_ALIASES, DOMAIN_REQUIRED_FIELDS
+
 
 app = FastAPI(
     title="AI Failure Intelligence Platform",
@@ -191,27 +193,13 @@ def current_user(session: Optional[str] = Cookie(default=None, alias=SESSION_COO
         raise HTTPException(status_code=401, detail="Authentication required.")
     return user
 
-DOMAIN_REQUIRED_FIELDS = {
-    "Student": ["absences", "studytime", "failures", "G1", "G2"],
-    "Software": ["pr", "cl", "pd", "co", "rp", "os", "bs", "bsr", "re", "at"],
-    "Jobs": [
-        "years_experience", "skills_match_score", "education_level",
-        "project_count", "resume_length", "github_activity"
-    ],
-    "Projects": [
-        "Complexity", "Project_Type", "Region", "Department",
-        "Project_Cost", "Project_Benefit", "Completion", "Phase", "Year", "Month"
-    ],
-}
-
 
 def validate_domain_payload(data: FailureInput, payload: dict) -> None:
     domain = str(data.Domain).strip().lower()
-    aliases = {"student": "Student", "software": "Software", "jobs": "Jobs", "projects": "Projects"}
-    if domain not in aliases:
+    if domain not in DOMAIN_ALIASES:
         raise HTTPException(status_code=422, detail=f"Unsupported domain: {data.Domain}")
 
-    canonical = aliases[domain]
+    canonical = DOMAIN_ALIASES[domain]
     missing = [
         field for field in DOMAIN_REQUIRED_FIELDS[canonical]
         if payload.get(field) is None

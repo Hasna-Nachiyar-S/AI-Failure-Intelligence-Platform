@@ -1,6 +1,11 @@
-from backend.counterfactual.generator import (
-    CounterfactualGenerator
-)
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from backend.counterfactual.generator import CounterfactualGenerator
+from scripts.domain_cases import CASES
 
 
 def main():
@@ -21,12 +26,7 @@ def main():
     # Test input
     # ---------------------------------------------------------
 
-    test_input = {
-        "Domain": "Student",
-        "Severity": 4,
-        "Score": 8,
-        "Description": "Absences + Study Time"
-    }
+    test_input = CASES["Student"]
 
     print("\nOriginal input:")
     print(test_input)
@@ -97,9 +97,7 @@ def main():
     print("MINIMUM EFFECTIVE CHANGE")
     print("-" * 60)
 
-    minimum_change = result[
-        "minimum_effective_change"
-    ]
+    minimum_change = result.get("minimum_effective_change")
 
     if minimum_change:
 
@@ -120,7 +118,7 @@ def main():
 
         print(
             "Change size:",
-            minimum_change["change_size"]
+            minimum_change.get("change_size", "not provided")
         )
 
     else:
@@ -137,9 +135,7 @@ def main():
     print("HIGHEST-CONFIDENCE SCENARIO")
     print("-" * 60)
 
-    highest_confidence = result[
-        "highest_confidence_scenario"
-    ]
+    highest_confidence = result.get("highest_risk_reduction")
 
     if highest_confidence:
 
@@ -160,7 +156,7 @@ def main():
 
         print(
             "Change size:",
-            highest_confidence["change_size"]
+            highest_confidence.get("change_size", "not provided")
         )
 
     else:
@@ -177,9 +173,7 @@ def main():
     print("RECOMMENDED CHANGES")
     print("-" * 60)
 
-    recommendations = result[
-        "recommended_changes"
-    ]
+    recommendations = result.get("recommended_changes")
 
     if recommendations:
 
