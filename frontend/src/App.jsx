@@ -26,44 +26,40 @@ function App() {
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [domain, setDomain] = useState("Student");
-  const [student, setStudent] = useState({
-    absences: 10,
-    studytime: 3,
-    failures: 0,
-    G1: 12,
-    G2: 12,
-  });
-  const [software, setSoftware] = useState({
-    pr: "P3",
-    cl: "5",
-    pd: "5",
-    co: "5",
-    rp: "5",
-    os: "windows",
-    bs: "5",
-    bsr: "5",
-    re: "user",
-    at: "user",
-  });
-  const [jobs, setJobs] = useState({
-    years_experience: 2,
-    skills_match_score: 70,
-    education_level: "Bachelor",
-    project_count: 3,
-    resume_length: 500,
-    github_activity: 10,
-  });
-  const [projects, setProjects] = useState({
-    Complexity: "Medium",
-    Project_Type: "Software",
-    Region: "Asia",
-    Department: "IT",
-    Project_Cost: 100000,
-    Project_Benefit: 150000,
-    Completion: 60,
-    Phase: "Execution",
-    Year: 2024,
-    Month: 6,
+  const [domainData, setDomainData] = useState({
+    Student: { absences: 10, studytime: 3, failures: 0, G1: 12, G2: 12 },
+    Software: {
+      pr: "P3",
+      cl: "5",
+      pd: "5",
+      co: "5",
+      rp: "5",
+      os: "windows",
+      bs: "5",
+      bsr: "5",
+      re: "user",
+      at: "user",
+    },
+    Jobs: {
+      years_experience: 2,
+      skills_match_score: 70,
+      education_level: "Bachelor",
+      project_count: 3,
+      resume_length: 500,
+      github_activity: 10,
+    },
+    Projects: {
+      Complexity: "Medium",
+      Project_Type: "Software",
+      Region: "Asia",
+      Department: "IT",
+      Project_Cost: 100000,
+      Project_Benefit: 150000,
+      Completion: 60,
+      Phase: "Execution",
+      Year: 2024,
+      Month: 6,
+    },
   });
   const [results, setResults] = useState(emptyResults());
   const [whatIfFeature, setWhatIfFeature] = useState("absences");
@@ -88,15 +84,7 @@ function App() {
       .catch(() => setScreen("auth"));
   }, []);
 
-  const update = (setter, key, value) =>
-    setter((old) => ({ ...old, [key]: value }));
-
-  const getData = () => {
-    if (domain === "Student") return { Domain: domain, ...student };
-    if (domain === "Software") return { Domain: domain, ...software };
-    if (domain === "Jobs") return { Domain: domain, ...jobs };
-    return { Domain: domain, ...projects };
-  };
+  const getData = () => ({ Domain: domain, ...domainData[domain] });
 
   const resetResults = () => {
     setResults(emptyResults());
@@ -143,12 +131,8 @@ function App() {
 
   const getWhatIfOptions = () => WHAT_IF_OPTIONS[domain] || [];
 
-  const getCurrentDomainValue = (key, selectedDomain = domain) => {
-    if (selectedDomain === "Student") return student[key];
-    if (selectedDomain === "Software") return software[key];
-    if (selectedDomain === "Jobs") return jobs[key];
-    return projects[key];
-  };
+  const getCurrentDomainValue = (key, selectedDomain = domain) =>
+    domainData[selectedDomain]?.[key];
 
   const getWhatIfConfig = () =>
     getWhatIfOptions().find((option) => option.key === whatIfFeature) ||
@@ -257,19 +241,12 @@ function App() {
 
   const whatIfConfig = getWhatIfConfig();
 
-  const domainValues = {
-    Student: student,
-    Software: software,
-    Jobs: jobs,
-    Projects: projects,
-  }[domain];
-  const domainSetters = {
-    Student: setStudent,
-    Software: setSoftware,
-    Jobs: setJobs,
-    Projects: setProjects,
-  }[domain];
-  const updateDomainField = (key, value) => update(domainSetters, key, value);
+  const domainValues = domainData[domain];
+  const updateDomainField = (key, value) =>
+    setDomainData((old) => ({
+      ...old,
+      [domain]: { ...old[domain], [key]: value },
+    }));
 
   return (
     <div className="shell">
