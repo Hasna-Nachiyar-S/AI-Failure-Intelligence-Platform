@@ -1,0 +1,148 @@
+/** Single source of truth for domain input labels and What-if controls. */
+export const DOMAIN_FIELDS = {
+  Student: [
+    { key: "absences", label: "Absences", type: "number" },
+    { key: "studytime", label: "Study Time", type: "number", min: 1, max: 4 },
+    { key: "failures", label: "Previous Failures", type: "number", min: 0 },
+    { key: "G1", label: "G1", type: "number", min: 0, max: 20 },
+    { key: "G2", label: "G2", type: "number", min: 0, max: 20 },
+  ],
+  Software: [
+    { key: "pr", label: "Priority" },
+    { key: "cl", label: "Complexity" },
+    { key: "pd", label: "Dependencies" },
+    { key: "co", label: "Coupling" },
+    { key: "rp", label: "Risk" },
+    { key: "os", label: "Operating System" },
+    { key: "bs", label: "Bug Size" },
+    { key: "bsr", label: "Bug Severity" },
+    { key: "re", label: "Reporter" },
+    { key: "at", label: "Assigned To" },
+  ],
+  Jobs: [
+    { key: "years_experience", label: "Years Experience", type: "number" },
+    {
+      key: "skills_match_score",
+      label: "Skills Match Score",
+      type: "number",
+      min: 0,
+      max: 100,
+    },
+    { key: "education_level", label: "Education Level" },
+    { key: "project_count", label: "Project Count", type: "number", min: 0 },
+    { key: "resume_length", label: "Resume Length", type: "number", min: 0 },
+    {
+      key: "github_activity",
+      label: "GitHub Activity",
+      type: "number",
+      min: 0,
+    },
+  ],
+  Projects: [
+    { key: "Complexity", label: "Complexity" },
+    { key: "Project_Type", label: "Project Type" },
+    { key: "Region", label: "Region" },
+    { key: "Department", label: "Department" },
+    { key: "Project_Cost", label: "Project Cost", type: "number" },
+    { key: "Project_Benefit", label: "Project Benefit", type: "number" },
+    {
+      key: "Completion",
+      label: "Completion %",
+      type: "number",
+      min: 0,
+      max: 100,
+    },
+    { key: "Phase", label: "Phase" },
+    { key: "Year", label: "Year", type: "number" },
+    { key: "Month", label: "Month", type: "number" },
+  ],
+};
+
+export const WHAT_IF_OPTIONS = {
+  Student: [
+    {
+      key: "absences",
+      label: "Absences",
+      type: "number",
+      min: 0,
+      max: 93,
+      step: 1,
+    },
+    {
+      key: "studytime",
+      label: "Study Time",
+      type: "select",
+      values: [1, 2, 3, 4],
+    },
+  ],
+  Software: [
+    { key: "pr", label: "Priority", type: "text" },
+    { key: "cl", label: "Complexity", type: "text" },
+    { key: "rp", label: "Risk", type: "text" },
+    { key: "os", label: "Operating System", type: "text" },
+    { key: "bs", label: "Bug Size", type: "text" },
+    { key: "bsr", label: "Bug Severity", type: "text" },
+  ],
+  Jobs: [
+    {
+      key: "skills_match_score",
+      label: "Skills Match Score",
+      type: "number",
+      min: 0,
+      max: 100,
+      step: 1,
+    },
+    {
+      key: "project_count",
+      label: "Project Count",
+      type: "number",
+      min: 0,
+      max: 100,
+      step: 1,
+    },
+    {
+      key: "resume_length",
+      label: "Resume Length",
+      type: "number",
+      min: 0,
+      max: 10000,
+      step: 1,
+    },
+    {
+      key: "github_activity",
+      label: "GitHub Activity",
+      type: "number",
+      min: 0,
+      max: 100,
+      step: 1,
+    },
+  ],
+  Projects: [
+    {
+      key: "Project_Cost",
+      label: "Project Cost",
+      type: "number",
+      min: 0,
+      step: 1,
+    },
+    {
+      key: "Project_Benefit",
+      label: "Project Benefit",
+      type: "number",
+      min: 0,
+      step: 1,
+    },
+    {
+      key: "Completion",
+      label: "Completion %",
+      type: "number",
+      min: 0,
+      max: 100,
+      step: 1,
+    },
+    { key: "Complexity", label: "Complexity", type: "text" },
+    { key: "Phase", label: "Phase", type: "text" },
+  ],
+};
+
+export const DOMAINS = Object.keys(DOMAIN_FIELDS);

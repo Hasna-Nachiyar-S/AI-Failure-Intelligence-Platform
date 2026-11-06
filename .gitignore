@@ -216,3 +216,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local user accounts and sessions
+backend/data/app.db
+backend/data/*.db-journal
