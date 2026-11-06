@@ -2210,146 +2210,103 @@ After the audit, implement the refactoring incrementally in the order defined ab
 
 **Baseline rule:** Preserve the current authenticated four-domain platform as the starting point. Do not restart from the original coding stage or replace the existing application with a new implementation.
 
-# Second Cleanup
+# Next Step
 
-## Objective
+1. Current Development Stage
+   Stage: Project Refinement and Verification
+   Primary Goal: Improve code quality, resolve integration issues, and ensure the complete platform works reliably without breaking existing functionality.
 
-Review the entire project and prepare a second cleanup version. Reduce unnecessary code, repeated logic, and unused files while keeping the application functional and the code beginner-friendly.
+2. Next Tasks
+   Priority 1 – Dependency Audit
+   Inspect dependencies between backend modules.
+   Review analytics and visualization dependencies.
+   Check recommendation rules and templates.
+   Verify whether archived ML modules are required by production features.
+   Identify genuinely unused code.
+   Preserve all necessary modules.
+   Priority 2 – Frontend Integration
+   Inspect all frontend imports and dependencies.
+   Resolve the missing frontend/src/lib/api.js module.
+   Verify API endpoint compatibility with FastAPI.
+   Check authentication and session handling.
+   Fix frontend errors without changing existing functionality.
+   Priority 3 – Graphical Representation
+   Inspect all dashboard charts and graphs.
+   Verify backend-generated visualization data.
+   Check chart rendering and data accuracy.
+   Verify failure comparisons.
+   Verify historical analytics.
+   Ensure visualizations work across all four domains.
+   Priority 4 – Backend Verification
+   Review FastAPI endpoints.
+   Check request and response structures.
+   Verify preprocessing and standardization.
+   Check database operations.
+   Verify authentication and user data isolation.
+   Check recommendation and counterfactual services.
+   Priority 5 – Machine Learning Verification
+   Verify all four domain-specific models.
+   Check model loading and prediction compatibility.
+   Verify preprocessing consistency between training and prediction.
+   Check failure classification accuracy.
+   alidate clustering and evaluation functionality where applicable.
+   Avoid unnecessary model retraining.
+   Priority 6 – Complete Application Testing
+   Test user registration and login.
+   Test Student analysis.
+   Test Software analysis.
+   Test Jobs analysis.
+   Test Projects analysis.
+   Test analysis history.
+   Test recommendations.
+   Test counterfactual generation.
+   Test What-If simulation.
+   Test all graphical representations.
+   Test database persistence.
+   Test multiple-user data isolation.
+   Priority 7 – Final Code Quality
+   Remove only confirmed unused code.
+   Improve code organization.
+   Resolve duplicate implementations.
+   Improve error handling.
+   Check frontend and backend consistency.
+   Verify environment configuration.
+   Update technical documentation.
 
-The main goal is to simplify the project without introducing complicated abstractions or changing existing application behavior.
+3. Final Verification Goals
 
-## 1. Project inspection
+Successful frontend production build.
 
-- Inspect the complete project structure.
-- Identify duplicated code, unused files, unnecessary imports, and outdated modules.
-- Check all references, imports, dependencies, and usage before removing anything.
-- Distinguish between production code, legacy code, development tools, and testing resources.
-- Do not assume a file is unused simply because it has no obvious direct import.
+Successful backend startup.
 
-## 2. Review these candidate files
+All API endpoints working correctly.
 
-Check whether the following files are genuinely unused and safe to remove:
+All four domains functioning correctly.
 
-**Frontend assets**
+All charts and graphical representations working.
 
-- `frontend/src/assets/react.svg`
-- `frontend/src/assets/hero.png`
-- `frontend/public/icons.svg`
+Authentication and database operations working.
 
-**Backend analytics and recommendation**
+No broken imports or missing dependencies.
 
-- `backend/analytics/visualization.py`
-- `backend/recommendation/rules.py`
-- `backend/recommendation/templates.py`
+No regressions in existing features.
 
-**Legacy machine-learning modules**
+4. Development Rules
 
-- `backend/ml/trainer.py`
-- `backend/ml/classifier.py`
-- `backend/ml/clustering.py`
-- `backend/ml/evaluator.py`
+Preserve all existing working functionality.
 
-**Backend services**
+Do not delete files without dependency verification.
 
-- `backend/services/preprocessing.py`
-- `backend/services/standardizer.py`
+Do not unnecessarily modify trained ML models.
 
-Remove a candidate only when its dependencies and references have been checked. If its purpose or usage is uncertain, preserve it in a backup folder instead.
+Maintain compatibility with existing database structures.
 
-## 3. Components that must be preserved
+Test changes before considering tasks complete.
 
-Do not remove or unnecessarily modify:
+Prioritize reliability over unnecessary code reduction.
 
-- All production API modules
-- `backend/ml/models/`
-- Counterfactual engine
-- Authentication system
-- Production recommendation system
-- Notebooks
-- Useful testing scripts
-- Any modules required by the application's production features
+5. Next Milestone
 
-Preserve preprocessing and standardization utilities if they are used by tests or other project components.
+Complete the dependency audit, resolve frontend integration issues, and verify that all existing graphical representations and application features work correctly.
 
-## 4. Dependency and reference checks
-
-Before removing any candidate:
-
-- Search the entire project for imports and references.
-- Check Python imports, frontend imports, scripts, configuration files, and runtime usage.
-- Check whether notebooks or testing scripts depend on the candidate.
-- Check whether the candidate is loaded dynamically.
-- Check whether it is referenced by deployment or build configuration.
-
-Do not delete uncertain files. Move them into a clearly named backup folder and document the reason.
-
-## 5. Code simplification
-
-- Remove genuinely duplicated or unnecessary code.
-- Prefer straightforward solutions over complex abstractions.
-- Avoid unnecessary changes to working application logic.
-- Keep function names and project structure understandable.
-- Do not rewrite entire modules just to reduce line count.
-- Preserve existing functionality and expected outputs.
-
-## 6. Testing and validation
-
-After cleanup:
-
-1. Run Python syntax compilation for backend and scripts.
-2. Run available unit tests and smoke tests.
-3. Run relevant preprocessing and standardization tests.
-4. Check backend imports and API startup where dependencies permit.
-5. Attempt a frontend production build if dependencies are available.
-6. Check for broken imports, missing assets, and missing modules.
-7. Compare important functionality before and after cleanup wherever possible.
-
-Report actual test results. Do not claim that a test passed if it was not executed.
-
-## 7. Final ZIP creation
-
-Create a new ZIP:
-
-`AI-Failure-Intelligence-Platform-second-cleanup.zip`
-
-The ZIP should contain:
-
-- The cleaned project
-- All required production files
-- Necessary notebooks and testing scripts
-- A backup folder containing uncertain or removed legacy files
-- An updated `CLEANUP_REPORT.md`
-
-Do not overwrite the original project ZIP or any earlier versions.
-
-Verify the ZIP integrity and inspect its contents before providing the download link.
-
-## 8. Cleanup report
-
-Create `CLEANUP_REPORT.md` documenting:
-
-- Files removed and reasons
-- Files moved to backup and reasons
-- Important files deliberately retained
-- Code simplifications performed
-- Dependency and reference checks
-- Tests executed and their results
-- Frontend build result
-- Known issues and unresolved problems
-- Final project structure summary
-
-## Important rules
-
-- Application functionality takes priority over reducing line count.
-- Do not remove production functionality.
-- Do not delete files based only on assumptions.
-- Preserve uncertain files in backups.
-- Keep the code simple and maintainable.
-- Do not invent missing modules or silently change application behavior.
-- Do not provide a download link until the ZIP has actually been created and verified.
-
-## Expected deliverables
-
-1. `AI-Failure-Intelligence-Platform-second-cleanup.zip`
-2. `CLEANUP_REPORT.md`
-3. A concise summary of modifications, validation results, and remaining issues.
+Overall Objective: Deliver a clean, reliable, maintainable AI Failure Intelligence Platform with all four domains and existing features fully functional.
