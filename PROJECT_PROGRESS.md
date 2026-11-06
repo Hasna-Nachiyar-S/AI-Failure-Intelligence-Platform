@@ -2209,3 +2209,147 @@ After the audit, implement the refactoring incrementally in the order defined ab
 **Completion status:** Pending source-code audit, implementation, regression testing, and packaging.
 
 **Baseline rule:** Preserve the current authenticated four-domain platform as the starting point. Do not restart from the original coding stage or replace the existing application with a new implementation.
+
+# Second Cleanup
+
+## Objective
+
+Review the entire project and prepare a second cleanup version. Reduce unnecessary code, repeated logic, and unused files while keeping the application functional and the code beginner-friendly.
+
+The main goal is to simplify the project without introducing complicated abstractions or changing existing application behavior.
+
+## 1. Project inspection
+
+- Inspect the complete project structure.
+- Identify duplicated code, unused files, unnecessary imports, and outdated modules.
+- Check all references, imports, dependencies, and usage before removing anything.
+- Distinguish between production code, legacy code, development tools, and testing resources.
+- Do not assume a file is unused simply because it has no obvious direct import.
+
+## 2. Review these candidate files
+
+Check whether the following files are genuinely unused and safe to remove:
+
+**Frontend assets**
+
+- `frontend/src/assets/react.svg`
+- `frontend/src/assets/hero.png`
+- `frontend/public/icons.svg`
+
+**Backend analytics and recommendation**
+
+- `backend/analytics/visualization.py`
+- `backend/recommendation/rules.py`
+- `backend/recommendation/templates.py`
+
+**Legacy machine-learning modules**
+
+- `backend/ml/trainer.py`
+- `backend/ml/classifier.py`
+- `backend/ml/clustering.py`
+- `backend/ml/evaluator.py`
+
+**Backend services**
+
+- `backend/services/preprocessing.py`
+- `backend/services/standardizer.py`
+
+Remove a candidate only when its dependencies and references have been checked. If its purpose or usage is uncertain, preserve it in a backup folder instead.
+
+## 3. Components that must be preserved
+
+Do not remove or unnecessarily modify:
+
+- All production API modules
+- `backend/ml/models/`
+- Counterfactual engine
+- Authentication system
+- Production recommendation system
+- Notebooks
+- Useful testing scripts
+- Any modules required by the application's production features
+
+Preserve preprocessing and standardization utilities if they are used by tests or other project components.
+
+## 4. Dependency and reference checks
+
+Before removing any candidate:
+
+- Search the entire project for imports and references.
+- Check Python imports, frontend imports, scripts, configuration files, and runtime usage.
+- Check whether notebooks or testing scripts depend on the candidate.
+- Check whether the candidate is loaded dynamically.
+- Check whether it is referenced by deployment or build configuration.
+
+Do not delete uncertain files. Move them into a clearly named backup folder and document the reason.
+
+## 5. Code simplification
+
+- Remove genuinely duplicated or unnecessary code.
+- Prefer straightforward solutions over complex abstractions.
+- Avoid unnecessary changes to working application logic.
+- Keep function names and project structure understandable.
+- Do not rewrite entire modules just to reduce line count.
+- Preserve existing functionality and expected outputs.
+
+## 6. Testing and validation
+
+After cleanup:
+
+1. Run Python syntax compilation for backend and scripts.
+2. Run available unit tests and smoke tests.
+3. Run relevant preprocessing and standardization tests.
+4. Check backend imports and API startup where dependencies permit.
+5. Attempt a frontend production build if dependencies are available.
+6. Check for broken imports, missing assets, and missing modules.
+7. Compare important functionality before and after cleanup wherever possible.
+
+Report actual test results. Do not claim that a test passed if it was not executed.
+
+## 7. Final ZIP creation
+
+Create a new ZIP:
+
+`AI-Failure-Intelligence-Platform-second-cleanup.zip`
+
+The ZIP should contain:
+
+- The cleaned project
+- All required production files
+- Necessary notebooks and testing scripts
+- A backup folder containing uncertain or removed legacy files
+- An updated `CLEANUP_REPORT.md`
+
+Do not overwrite the original project ZIP or any earlier versions.
+
+Verify the ZIP integrity and inspect its contents before providing the download link.
+
+## 8. Cleanup report
+
+Create `CLEANUP_REPORT.md` documenting:
+
+- Files removed and reasons
+- Files moved to backup and reasons
+- Important files deliberately retained
+- Code simplifications performed
+- Dependency and reference checks
+- Tests executed and their results
+- Frontend build result
+- Known issues and unresolved problems
+- Final project structure summary
+
+## Important rules
+
+- Application functionality takes priority over reducing line count.
+- Do not remove production functionality.
+- Do not delete files based only on assumptions.
+- Preserve uncertain files in backups.
+- Keep the code simple and maintainable.
+- Do not invent missing modules or silently change application behavior.
+- Do not provide a download link until the ZIP has actually been created and verified.
+
+## Expected deliverables
+
+1. `AI-Failure-Intelligence-Platform-second-cleanup.zip`
+2. `CLEANUP_REPORT.md`
+3. A concise summary of modifications, validation results, and remaining issues.

@@ -133,6 +133,37 @@ def print_header(
     print_separator()
 
 
+def clean_column_names(df):
+    """Remove accidental whitespace from dataset column names."""
+    df.columns = df.columns.astype(str).str.strip()
+    return df
+
+
+def validate_columns(df, required, dataset_name, path=None):
+    """Raise a useful error when a dataset is missing required columns."""
+    missing = [column for column in required if column not in df.columns]
+    if missing:
+        location = f"File: {path}\n" if path else ""
+        raise KeyError(
+            f"{dataset_name} dataset is missing columns: {missing}\n"
+            f"{location}Available columns:\n{list(df.columns)}"
+        )
+
+
+def remove_missing_targets(df, dataset_name, show_row_counts=False):
+    """Remove rows without a usable target and report the number removed."""
+    missing = df["Failure_Type"].isna().sum()
+    if missing:
+        print(f"\n{dataset_name} target cleaning:")
+        if show_row_counts:
+            print(f"  Rows before: {len(df)}")
+        print(f"  Missing target rows removed: {missing}")
+        df = df.dropna(subset=["Failure_Type"]).copy()
+        if show_row_counts:
+            print(f"  Rows after: {len(df)}")
+    return df
+
+
 # =============================================================================
 # FILE DISCOVERY
 # =============================================================================
@@ -270,18 +301,7 @@ def load_student():
         "G3",
     ]
 
-    missing = [
-        col
-        for col in required_columns
-        if col not in df.columns
-    ]
-
-    if missing:
-        raise KeyError(
-            "Student dataset is missing columns: "
-            f"{missing}\n"
-            f"Available columns:\n{list(df.columns)}"
-        )
+    validate_columns(df, required_columns, "Student")
 
     # -------------------------------------------------------------------------
     # Create target
@@ -381,11 +401,7 @@ def load_software():
     # Clean column names
     # -------------------------------------------------------------------------
 
-    df.columns = (
-        df.columns
-        .astype(str)
-        .str.strip()
-    )
+    clean_column_names(df)
 
     required_columns = [
         "pr",
@@ -401,18 +417,7 @@ def load_software():
         "rs",
     ]
 
-    missing = [
-        col
-        for col in required_columns
-        if col not in df.columns
-    ]
-
-    if missing:
-        raise KeyError(
-            "Mozilla dataset is missing columns: "
-            f"{missing}\n"
-            f"Available columns:\n{list(df.columns)}"
-        )
+    validate_columns(df, required_columns, "Mozilla")
 
     # -------------------------------------------------------------------------
     # Clean target
@@ -436,36 +441,7 @@ def load_software():
         )
     )
 
-    rows_before = len(df)
-
-    missing_target = (
-        df["Failure_Type"]
-        .isna()
-        .sum()
-    )
-
-    if missing_target > 0:
-
-        print(
-            "\nSoftware target cleaning:"
-        )
-
-        print(
-            f"  Rows before: {rows_before}"
-        )
-
-        print(
-            f"  Missing target rows removed: "
-            f"{missing_target}"
-        )
-
-        df = df.dropna(
-            subset=["Failure_Type"]
-        ).copy()
-
-        print(
-            f"  Rows after: {len(df)}"
-        )
+    df = remove_missing_targets(df, "Software", show_row_counts=True)
 
     # -------------------------------------------------------------------------
     # Features
@@ -553,11 +529,7 @@ def load_jobs():
     # Clean column names
     # -------------------------------------------------------------------------
 
-    df.columns = (
-        df.columns
-        .astype(str)
-        .str.strip()
-    )
+    clean_column_names(df)
 
     required_columns = [
         "years_experience",
@@ -569,19 +541,7 @@ def load_jobs():
         "shortlisted",
     ]
 
-    missing = [
-        col
-        for col in required_columns
-        if col not in df.columns
-    ]
-
-    if missing:
-        raise KeyError(
-            "Jobs dataset is missing columns: "
-            f"{missing}\n"
-            f"File: {path}\n"
-            f"Available columns:\n{list(df.columns)}"
-        )
+    validate_columns(df, required_columns, "Jobs", path)
 
     # -------------------------------------------------------------------------
     # Create standardized target
@@ -604,26 +564,7 @@ def load_jobs():
     # Remove rows with missing target
     # -------------------------------------------------------------------------
 
-    missing_target = (
-        df["Failure_Type"]
-        .isna()
-        .sum()
-    )
-
-    if missing_target > 0:
-
-        print(
-            "\nJobs target cleaning:"
-        )
-
-        print(
-            f"  Missing target rows removed: "
-            f"{missing_target}"
-        )
-
-        df = df.dropna(
-            subset=["Failure_Type"]
-        ).copy()
+    df = remove_missing_targets(df, "Jobs")
 
     # -------------------------------------------------------------------------
     # Features
@@ -715,11 +656,7 @@ def load_projects():
     # Strip whitespace from every column name.
     # -------------------------------------------------------------------------
 
-    df.columns = (
-        df.columns
-        .astype(str)
-        .str.strip()
-    )
+    clean_column_names(df)
 
     required_columns = [
         "Complexity",
@@ -735,19 +672,7 @@ def load_projects():
         "Status",
     ]
 
-    missing = [
-        col
-        for col in required_columns
-        if col not in df.columns
-    ]
-
-    if missing:
-        raise KeyError(
-            "Projects dataset is missing columns: "
-            f"{missing}\n"
-            f"File: {path}\n"
-            f"Available columns:\n{list(df.columns)}"
-        )
+    validate_columns(df, required_columns, "Projects", path)
 
     # -------------------------------------------------------------------------
     # Clean numeric fields
@@ -807,26 +732,7 @@ def load_projects():
     )
 
     # Remove missing target rows.
-    missing_target = (
-        df["Failure_Type"]
-        .isna()
-        .sum()
-    )
-
-    if missing_target > 0:
-
-        print(
-            "\nProjects target cleaning:"
-        )
-
-        print(
-            f"  Missing target rows removed: "
-            f"{missing_target}"
-        )
-
-        df = df.dropna(
-            subset=["Failure_Type"]
-        ).copy()
+    df = remove_missing_targets(df, "Projects")
 
     features = [
         "Complexity",
