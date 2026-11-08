@@ -3,7 +3,6 @@ from typing import Optional, Any
 from fastapi import (
     FastAPI,
     HTTPException,
-    Request,
     Response,
     Depends,
     Cookie,
