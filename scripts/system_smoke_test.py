@@ -41,6 +41,12 @@ def main():
 
         assert prediction["class_probabilities"], f"{domain}: no probabilities"
         assert recommendation["prediction"]["failure_type"] == prediction["failure_type"]
+        recommended_probabilities = recommendation["prediction"]["class_probabilities"]
+        assert recommended_probabilities.keys() == prediction["class_probabilities"].keys()
+        assert all(
+            abs(recommended_probabilities[label] - probability) < 1e-12
+            for label, probability in prediction["class_probabilities"].items()
+        )
         assert profile["profile"] is not None
         assert constraint_info["actionable_features"]
 

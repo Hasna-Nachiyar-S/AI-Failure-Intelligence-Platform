@@ -55,9 +55,15 @@ class Recommender:
 
             "prediction": {
                 "failure_type": failure_type,
-                "probability": probability
+                "probability": probability,
+                # Keep class probabilities beside the predicted class so
+                # frontend result charts and the /predict response share
+                # the same predictable shape.
+                "class_probabilities": class_probabilities
             },
 
+            # Backward-compatible legacy field; existing clients may still
+            # consume the class-probability mapping from this key.
             "probability": class_probabilities,
 
             "cluster": {

@@ -2210,103 +2210,90 @@ After the audit, implement the refactoring incrementally in the order defined ab
 
 **Baseline rule:** Preserve the current authenticated four-domain platform as the starting point. Do not restart from the original coding stage or replace the existing application with a new implementation.
 
-# Next Step
+# Next Development Stage: Code Optimization and Safe Code Reduction
 
-1. Current Development Stage
-   Stage: Project Refinement and Verification
-   Primary Goal: Improve code quality, resolve integration issues, and ensure the complete platform works reliably without breaking existing functionality.
+## Primary Objective
 
-2. Next Tasks
-   Priority 1 – Dependency Audit
-   Inspect dependencies between backend modules.
-   Review analytics and visualization dependencies.
-   Check recommendation rules and templates.
-   Verify whether archived ML modules are required by production features.
-   Identify genuinely unused code.
-   Preserve all necessary modules.
-   Priority 2 – Frontend Integration
-   Inspect all frontend imports and dependencies.
-   Resolve the missing frontend/src/lib/api.js module.
-   Verify API endpoint compatibility with FastAPI.
-   Check authentication and session handling.
-   Fix frontend errors without changing existing functionality.
-   Priority 3 – Graphical Representation
-   Inspect all dashboard charts and graphs.
-   Verify backend-generated visualization data.
-   Check chart rendering and data accuracy.
-   Verify failure comparisons.
-   Verify historical analytics.
-   Ensure visualizations work across all four domains.
-   Priority 4 – Backend Verification
-   Review FastAPI endpoints.
-   Check request and response structures.
-   Verify preprocessing and standardization.
-   Check database operations.
-   Verify authentication and user data isolation.
-   Check recommendation and counterfactual services.
-   Priority 5 – Machine Learning Verification
-   Verify all four domain-specific models.
-   Check model loading and prediction compatibility.
-   Verify preprocessing consistency between training and prediction.
-   Check failure classification accuracy.
-   alidate clustering and evaluation functionality where applicable.
-   Avoid unnecessary model retraining.
-   Priority 6 – Complete Application Testing
-   Test user registration and login.
-   Test Student analysis.
-   Test Software analysis.
-   Test Jobs analysis.
-   Test Projects analysis.
-   Test analysis history.
-   Test recommendations.
-   Test counterfactual generation.
-   Test What-If simulation.
-   Test all graphical representations.
-   Test database persistence.
-   Test multiple-user data isolation.
-   Priority 7 – Final Code Quality
-   Remove only confirmed unused code.
-   Improve code organization.
-   Resolve duplicate implementations.
-   Improve error handling.
-   Check frontend and backend consistency.
-   Verify environment configuration.
-   Update technical documentation.
+Shorten, simplify, and organize the existing AI Failure Intelligence Platform codebase while preserving all existing functionality.
 
-3. Final Verification Goals
+This is a code optimization project, NOT a production deployment project.
 
-Successful frontend production build.
+## Priority 1 – Dependency Audit
 
-Successful backend startup.
+- Inspect backend module dependencies.
+- Inspect frontend imports and dependencies.
+- Identify unused functions, variables, imports and files.
+- Check analytics and visualization dependencies.
+- Check recommendation rules and templates.
+- Determine whether archived ML modules are required.
+- Preserve all necessary modules.
 
-All API endpoints working correctly.
+## Priority 2 – Code Reduction
 
-All four domains functioning correctly.
+- Remove only confirmed unused code.
+- Simplify unnecessarily lengthy functions.
+- Reduce repetitive implementations.
+- Identify opportunities for reusable functions.
+- Remove duplicate logic where safe.
+- Simplify frontend components.
+- Improve backend code organization.
 
-All charts and graphical representations working.
+## Priority 3 – Preserve Existing Functionality
 
-Authentication and database operations working.
+Verify that these features remain operational:
 
-No broken imports or missing dependencies.
+- Authentication and registration.
+- Student analysis.
+- Software analysis.
+- Jobs analysis.
+- Projects analysis.
+- Dashboard analytics.
+- All existing charts.
+- Analysis history.
+- Recommendations.
+- Counterfactual generation.
+- What-If simulation.
+- Database persistence.
+- Multiple-user data isolation.
 
-No regressions in existing features.
+## Priority 4 – Machine Learning Preservation
 
-4. Development Rules
+- Preserve all four domain-specific models.
+- Preserve preprocessing and standardization.
+- Preserve prediction compatibility.
+- Preserve clustering and evaluation functionality.
+- Avoid unnecessary model retraining.
+- Do not remove archived models without dependency verification.
 
-Preserve all existing working functionality.
+## Priority 5 – Testing
 
-Do not delete files without dependency verification.
+- Run Python compilation checks.
+- Run backend smoke tests.
+- Run frontend import and lint checks.
+- Run a frontend build as a basic compatibility check, not a deployment requirement.
+- Test all four domains.
+- Verify existing charts and features.
+- Report untested functionality honestly.
 
-Do not unnecessarily modify trained ML models.
+## Development Rules
 
-Maintain compatibility with existing database structures.
+1. Do not rewrite working code unnecessarily.
+2. Do not delete files without dependency verification.
+3. Do not change database structures.
+4. Do not change ML model architectures unnecessarily.
+5. Prefer minimal changes.
+6. Keep existing functionality and API compatibility.
+7. Maintain a modified/added/deleted file report.
+8. Compare the original and optimized project.
 
-Test changes before considering tasks complete.
+## Final Deliverables
 
-Prioritize reliability over unnecessary code reduction.
+- Optimized complete project ZIP.
+- List of removed unused code.
+- List of modified files.
+- List of deleted files, if any.
+- Before-and-after code size comparison.
+- Test results.
+- Documentation of important changes.
 
-5. Next Milestone
-
-Complete the dependency audit, resolve frontend integration issues, and verify that all existing graphical representations and application features work correctly.
-
-Overall Objective: Deliver a clean, reliable, maintainable AI Failure Intelligence Platform with all four domains and existing features fully functional.
+**Success criteria:** A shorter, cleaner, maintainable codebase with all existing functionality preserved. Production deployment is outside the scope of this stage.

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import DomainFields from "./components/DomainFields";
 import { DOMAINS, WHAT_IF_OPTIONS } from "./config/domains";
 import { api } from "./lib/api";
@@ -232,13 +232,6 @@ function App() {
     ? Number(results.prediction.probability || 0) * 100
     : null;
 
-  const domainCount = useMemo(
-    () =>
-      dashboard?.domain_breakdown?.reduce((sum, item) => sum + item.count, 0) ||
-      0,
-    [dashboard],
-  );
-
   const whatIfConfig = getWhatIfConfig();
 
   const domainValues = domainData[domain];
@@ -247,6 +240,346 @@ function App() {
       ...old,
       [domain]: { ...old[domain], [key]: value },
     }));
+
+  if (screen === "loading") {
+    return <div className="loading-screen">Loading your workspace…</div>;
+  }
+
+  if (screen === "auth") {
+    return (
+      <div className="auth-page">
+        <div className="auth-brand">
+          <span className="brand-mark">AI</span>
+          <span>
+            <strong>Failure Intelligence</strong>
+            <small>Decision support</small>
+          </span>
+        </div>
+        <section className="auth-card">
+          <div className="auth-copy">
+            <p className="eyebrow">AI FAILURE INTELLIGENCE PLATFORM</p>
+            <h1>
+              {authMode === "login" ? "Welcome back" : "Create your account"}
+            </h1>
+            <p>Sign in to access your personal analysis workspace.</p>
+          </div>
+          {authError && <div className="error">{authError}</div>}
+          <form onSubmit={loginOrSignup}>
+            {authMode === "signup" && (
+              <Field label="Full name">
+                <input
+                  autoComplete="name"
+                  value={authForm.full_name}
+                  onChange={(e) =>
+                    setAuthForm((old) => ({
+                      ...old,
+                      full_name: e.target.value,
+                    }))
+                  }
+                  required
+                  minLength={2}
+                />
+              </Field>
+            )}
+            <Field label="Email">
+              <input
+                type="email"
+                autoComplete="email"
+                value={authForm.email}
+                onChange={(e) =>
+                  setAuthForm((old) => ({ ...old, email: e.target.value }))
+                }
+                required
+              />
+            </Field>
+            <Field label="Password">
+              <input
+                type="password"
+                autoComplete={
+                  authMode === "login" ? "current-password" : "new-password"
+                }
+                value={authForm.password}
+                onChange={(e) =>
+                  setAuthForm((old) => ({ ...old, password: e.target.value }))
+                }
+                required
+                minLength={8}
+              />
+            </Field>
+            <button className="primary-btn" type="submit">
+              {authMode === "login" ? "Sign in" : "Create account"}
+            </button>
+          </form>
+          <p className="auth-foot">
+            {authMode === "login"
+              ? "New to the platform?"
+              : "Already have an account?"}{" "}
+            <button
+              className="text-btn"
+              type="button"
+              onClick={() => {
+                setAuthMode(authMode === "login" ? "signup" : "login");
+                setAuthError("");
+              }}
+            >
+              {authMode === "login" ? "Create an account" : "Sign in"}
+            </button>
+          </p>
+        </section>
+      </div>
+    );
+  }
+
+  if (screen === "dashboard") {
+    const breakdown = DOMAINS.map((name) => ({
+      domain: name,
+      count:
+        dashboard?.domain_breakdown?.find((item) => item.domain === name)
+          ?.count || 0,
+    }));
+    const trend = [...(dashboard?.recent_analyses || [])]
+      .reverse()
+      .map((item) => ({
+        label: new Date(item.created_at).toLocaleDateString(),
+        probability: Number(item.probability || 0),
+      }));
+    return (
+      <div className="shell">
+        <Topbar
+          user={user}
+          onDashboard={goDashboard}
+          onAnalyze={() => setScreen("analyze")}
+          onHistory={() => setScreen("history")}
+          onLogout={logout}
+          active="dashboard"
+        />
+        {error && <div className="error global-error">{error}</div>}
+        <main className="dashboard">
+          <div className="welcome">
+            <div>
+              <p className="eyebrow">PERSONAL WORKSPACE</p>
+              <h1>Welcome, {user?.full_name}</h1>
+              <p>
+                Monitor your analyses and explore failure patterns across all
+                four domains.
+              </p>
+            </div>
+            <button
+              className="primary-btn compact"
+              onClick={() => setScreen("analyze")}
+            >
+              New analysis
+            </button>
+          </div>
+          <div className="stat-grid">
+            <Stat
+              title="Total analyses"
+              value={dashboard?.total_analyses ?? 0}
+              detail="Saved to your account"
+            />
+            <Stat
+              title="Domains explored"
+              value={breakdown.filter((item) => item.count > 0).length}
+              detail="Out of four domains"
+            />
+            <Stat
+              title="Average probability"
+              value={
+                dashboard?.average_probability == null
+                  ? "—"
+                  : `${(dashboard.average_probability * 100).toFixed(1)}%`
+              }
+              detail="Across saved predictions"
+            />
+            <Stat
+              title="Recent records"
+              value={dashboard?.recent_analyses?.length ?? 0}
+              detail="Latest 10 analyses"
+            />
+          </div>
+          <div className="dashboard-grid">
+            <ChartPanel
+              eyebrow="DOMAIN DISTRIBUTION"
+              title="Analyses by domain"
+            >
+              <DonutChart data={breakdown} labelKey="domain" valueKey="count" />
+            </ChartPanel>
+            <ChartPanel
+              eyebrow="RECENT ACTIVITY"
+              title="Predicted probability trend"
+              description="Model probability for the predicted class in your latest analyses."
+            >
+              <LineChart
+                data={trend}
+                labelKey="label"
+                valueKey="probability"
+                percent
+              />
+            </ChartPanel>
+            <ChartPanel
+              eyebrow="DOMAIN COMPARISON"
+              title="Analysis volume comparison"
+            >
+              <BarChart data={breakdown} labelKey="domain" valueKey="count" />
+            </ChartPanel>
+            <section className="panel history-panel">
+              <div className="panel-head">
+                <div>
+                  <p className="eyebrow">LATEST RECORDS</p>
+                  <h2>Recent analyses</h2>
+                </div>
+                <button
+                  className="text-btn"
+                  onClick={() => setScreen("history")}
+                >
+                  View history
+                </button>
+              </div>
+              {(dashboard?.recent_analyses || []).length ? (
+                dashboard.recent_analyses
+                  .slice(0, 5)
+                  .map((item) => (
+                    <HistoryRow
+                      key={item.id}
+                      item={item}
+                      onOpen={openAnalysis}
+                    />
+                  ))
+              ) : (
+                <Empty text="No analyses have been saved yet." />
+              )}
+            </section>
+          </div>
+        </main>
+        {selectedAnalysis && (
+          <AnalysisDetail
+            analysis={selectedAnalysis}
+            onClose={() => setSelectedAnalysis(null)}
+          />
+        )}
+      </div>
+    );
+  }
+
+  if (screen === "history") {
+    const filteredHistory =
+      historyFilter === "All"
+        ? history
+        : history.filter((item) => item.domain === historyFilter);
+    const ordered = [...history].reverse();
+    const trend = ordered.map((item) => ({
+      label: new Date(item.created_at).toLocaleDateString(),
+      probability: Number(item.probability || 0),
+    }));
+    const comparison = DOMAINS.map((name) => {
+      const rows = history.filter(
+        (item) => item.domain === name && item.probability != null,
+      );
+      return {
+        domain: name,
+        average: rows.length
+          ? rows.reduce((sum, item) => sum + Number(item.probability), 0) /
+            rows.length
+          : 0,
+      };
+    });
+    const domainMix = DOMAINS.map((name) => ({
+      domain: name,
+      count: history.filter((item) => item.domain === name).length,
+    }));
+    return (
+      <div className="shell">
+        <Topbar
+          user={user}
+          onDashboard={goDashboard}
+          onAnalyze={() => setScreen("analyze")}
+          onHistory={() => setScreen("history")}
+          onLogout={logout}
+          active="history"
+        />
+        {error && <div className="error global-error">{error}</div>}
+        <main className="dashboard">
+          <div className="welcome">
+            <div>
+              <p className="eyebrow">SAVED WORK</p>
+              <h1>Analysis history</h1>
+              <p>
+                Review previous predictions and compare activity across domains.
+              </p>
+            </div>
+          </div>
+          <div className="dashboard-grid">
+            <ChartPanel
+              eyebrow="HISTORICAL ANALYTICS"
+              title="Predicted probability over time"
+            >
+              <LineChart
+                data={trend}
+                labelKey="label"
+                valueKey="probability"
+                percent
+              />
+            </ChartPanel>
+            <ChartPanel
+              eyebrow="DOMAIN MIX"
+              title="Historical domain distribution"
+            >
+              <DonutChart data={domainMix} labelKey="domain" valueKey="count" />
+            </ChartPanel>
+            <ChartPanel
+              eyebrow="FAILURE COMPARISON"
+              title="Average predicted probability by domain"
+              description="Descriptive averages from saved predictions; not a model-performance score."
+            >
+              <BarChart
+                data={comparison}
+                labelKey="domain"
+                valueKey="average"
+              />
+            </ChartPanel>
+          </div>
+          <div className="history-toolbar">
+            <label className="filter-label">
+              <span>Filter by domain</span>
+              <select
+                value={historyFilter}
+                onChange={(e) => setHistoryFilter(e.target.value)}
+              >
+                <option>All</option>
+                {DOMAINS.map((name) => (
+                  <option key={name}>{name}</option>
+                ))}
+              </select>
+            </label>
+            <span className="muted">{filteredHistory.length} records</span>
+          </div>
+          <section className="panel history-panel">
+            {filteredHistory.length ? (
+              filteredHistory.map((item) => (
+                <HistoryRow
+                  key={item.id}
+                  item={item}
+                  detailed
+                  onOpen={openAnalysis}
+                />
+              ))
+            ) : (
+              <Empty text="No saved analyses match this filter." />
+            )}
+          </section>
+          {historyLoading && (
+            <p className="loading-note">Loading analysis details…</p>
+          )}
+        </main>
+        {selectedAnalysis && (
+          <AnalysisDetail
+            analysis={selectedAnalysis}
+            onClose={() => setSelectedAnalysis(null)}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="shell">
@@ -656,18 +989,20 @@ function AnalysisDetail({ analysis, onClose }) {
   let input = {};
   let result = {};
   try {
+    const savedInput = analysis.input ?? analysis.input_json;
     input =
-      typeof analysis.input_json === "string"
-        ? JSON.parse(analysis.input_json)
-        : analysis.input_json || {};
+      typeof savedInput === "string"
+        ? JSON.parse(savedInput)
+        : savedInput || {};
   } catch {
     input = {};
   }
   try {
+    const savedResult = analysis.result ?? analysis.result_json;
     result =
-      typeof analysis.result_json === "string"
-        ? JSON.parse(analysis.result_json)
-        : analysis.result_json || {};
+      typeof savedResult === "string"
+        ? JSON.parse(savedResult)
+        : savedResult || {};
   } catch {
     result = {};
   }
@@ -708,6 +1043,17 @@ function AnalysisDetail({ analysis, onClose }) {
             </strong>
           </div>
         </div>
+        {Object.keys(prediction.class_probabilities || result.probability || {})
+          .length > 0 && (
+          <div className="prob-chart">
+            <h3>Saved class probabilities</h3>
+            <HorizontalProbabilities
+              probabilities={
+                prediction.class_probabilities || result.probability || {}
+              }
+            />
+          </div>
+        )}
         <h3>Recorded inputs</h3>
         <pre className="detail-json">{JSON.stringify(input, null, 2)}</pre>
       </section>
@@ -728,13 +1074,6 @@ function ChartPanel({ title, eyebrow, description, children }) {
       {children}
     </section>
   );
-}
-function countDomains(items) {
-  const counts = {};
-  items.forEach((item) => {
-    counts[item.domain] = (counts[item.domain] || 0) + 1;
-  });
-  return Object.entries(counts).map(([domain, count]) => ({ domain, count }));
 }
 function DonutChart({ data, labelKey, valueKey }) {
   const total = data.reduce(
