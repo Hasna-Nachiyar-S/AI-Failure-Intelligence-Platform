@@ -1,5 +1,6 @@
 
 import hashlib
+import json
 import hmac
 import os
 import secrets
@@ -250,11 +251,11 @@ def get_analysis(user_id: int, analysis_id: int):
         return None
     item = dict(row)
     try:
-        item["input"] = __import__("json").loads(item.pop("input_json"))
+        item["input"] = json.loads(item.pop("input_json"))
     except Exception:
         item["input"] = {}
     try:
-        item["result"] = __import__("json").loads(item.pop("result_json"))
+        item["result"] = json.loads(item.pop("result_json"))
     except Exception:
         item["result"] = {}
     return item

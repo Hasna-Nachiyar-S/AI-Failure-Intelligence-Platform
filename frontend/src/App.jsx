@@ -129,14 +129,16 @@ function App() {
     }
   };
 
-  const getWhatIfOptions = () => WHAT_IF_OPTIONS[domain] || [];
-
   const getCurrentDomainValue = (key, selectedDomain = domain) =>
     domainData[selectedDomain]?.[key];
 
-  const getWhatIfConfig = () =>
-    getWhatIfOptions().find((option) => option.key === whatIfFeature) ||
-    getWhatIfOptions()[0];
+  const whatIfOptions = WHAT_IF_OPTIONS[domain] || [];
+  const whatIfConfig =
+    whatIfOptions.find((option) => option.key === whatIfFeature) ||
+    whatIfOptions[0];
+
+  const updateAuthField = (field, value) =>
+    setAuthForm((old) => ({ ...old, [field]: value }));
 
   const resetWhatIf = (nextDomain = domain) => {
     const nextFeature = (WHAT_IF_OPTIONS[nextDomain] || [])[0]?.key;
@@ -147,7 +149,7 @@ function App() {
   };
 
   const runWhatIf = async () => {
-    const config = getWhatIfConfig();
+    const config = whatIfConfig;
     if (!config || whatIfValue === "") {
       setError("Please enter a value for the selected feature.");
       return;
@@ -232,8 +234,6 @@ function App() {
     ? Number(results.prediction.probability || 0) * 100
     : null;
 
-  const whatIfConfig = getWhatIfConfig();
-
   const domainValues = domainData[domain];
   const updateDomainField = (key, value) =>
     setDomainData((old) => ({
@@ -270,12 +270,7 @@ function App() {
                 <input
                   autoComplete="name"
                   value={authForm.full_name}
-                  onChange={(e) =>
-                    setAuthForm((old) => ({
-                      ...old,
-                      full_name: e.target.value,
-                    }))
-                  }
+                  onChange={(e) => updateAuthField("full_name", e.target.value)}
                   required
                   minLength={2}
                 />
@@ -286,9 +281,7 @@ function App() {
                 type="email"
                 autoComplete="email"
                 value={authForm.email}
-                onChange={(e) =>
-                  setAuthForm((old) => ({ ...old, email: e.target.value }))
-                }
+                onChange={(e) => updateAuthField("email", e.target.value)}
                 required
               />
             </Field>
@@ -299,9 +292,7 @@ function App() {
                   authMode === "login" ? "current-password" : "new-password"
                 }
                 value={authForm.password}
-                onChange={(e) =>
-                  setAuthForm((old) => ({ ...old, password: e.target.value }))
-                }
+                onChange={(e) => updateAuthField("password", e.target.value)}
                 required
                 minLength={8}
               />
@@ -802,7 +793,7 @@ function App() {
                   setResults((old) => ({ ...old, whatIf: null }));
                 }}
               >
-                {getWhatIfOptions().map((option) => (
+                {whatIfOptions.map((option) => (
                   <option key={option.key} value={option.key}>
                     {option.label}
                   </option>

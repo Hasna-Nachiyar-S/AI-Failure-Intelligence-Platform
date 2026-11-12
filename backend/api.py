@@ -56,12 +56,10 @@ import os
 
 from backend.domain_config import DOMAIN_ALIASES, DOMAIN_REQUIRED_FIELDS
 
-
 app = FastAPI(
     title="AI Failure Intelligence Platform",
     version="1.0"
 )
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -77,7 +75,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
-
 
 manager = DomainModelManager()
 
@@ -166,32 +163,26 @@ class FailureInput(BaseModel):
     max_guided_features: Optional[int] = Field(default=2, ge=1, le=10)
     desired_prediction: Optional[str] = None
 
-
 class WhatIfInput(FailureInput):
 
     changes: dict = Field(
         default_factory=dict
     )
 
-
-
 class AuthSignup(BaseModel):
     full_name: str
     email: str
     password: str
 
-
 class AuthLogin(BaseModel):
     email: str
     password: str
-
 
 def current_user(session: Optional[str] = Cookie(default=None, alias=SESSION_COOKIE)):
     user = get_user_by_session(session)
     if not user:
         raise HTTPException(status_code=401, detail="Authentication required.")
     return user
-
 
 def validate_domain_payload(data: FailureInput, payload: dict) -> None:
     domain = str(data.Domain).strip().lower()
@@ -209,7 +200,6 @@ def validate_domain_payload(data: FailureInput, payload: dict) -> None:
             detail={"domain": canonical, "missing_fields": missing},
         )
 
-
 @app.get("/health")
 def health():
 
@@ -218,7 +208,6 @@ def health():
         "message":
             "AI Failure Intelligence API is running"
     }
-
 
 @app.post("/predict")
 def predict(data: FailureInput, user: dict = Depends(current_user)):
@@ -239,7 +228,6 @@ def predict(data: FailureInput, user: dict = Depends(current_user)):
             status_code=400,
             detail=str(e)
         )
-
 
 @app.post("/recommend")
 def recommend(data: FailureInput, user: dict = Depends(current_user)):
@@ -267,11 +255,9 @@ def recommend(data: FailureInput, user: dict = Depends(current_user)):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-
 @app.get("/auth/me")
 def auth_me(user: dict = Depends(current_user)):
     return user
-
 
 @app.post("/auth/signup")
 def auth_signup(data: AuthSignup, response: Response):
@@ -300,7 +286,6 @@ def auth_signup(data: AuthSignup, response: Response):
     )
     return user
 
-
 @app.post("/auth/login")
 def auth_login(data: AuthLogin, response: Response):
     user = authenticate(data.email, data.password)
@@ -323,7 +308,6 @@ def auth_login(data: AuthLogin, response: Response):
         "created_at": user["created_at"],
     }
 
-
 @app.post("/auth/logout")
 def auth_logout(
     response: Response,
@@ -333,7 +317,6 @@ def auth_logout(
     response.delete_cookie(SESSION_COOKIE)
     return {"message": "Logged out."}
 
-
 @app.get("/dashboard")
 def dashboard(user: dict = Depends(current_user)):
     return {
@@ -341,11 +324,9 @@ def dashboard(user: dict = Depends(current_user)):
         **get_dashboard(user["id"]),
     }
 
-
 @app.get("/history")
 def history(user: dict = Depends(current_user)):
     return get_history(user["id"])
-
 
 @app.get("/history/{analysis_id}")
 def history_detail(analysis_id: int, user: dict = Depends(current_user)):
@@ -354,14 +335,12 @@ def history_detail(analysis_id: int, user: dict = Depends(current_user)):
         raise HTTPException(status_code=404, detail="Analysis not found.")
     return analysis
 
-
 @app.get("/constraints/{domain}")
 def get_constraints(domain: str):
     try:
         return constraints.describe(domain)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
 
 @app.post("/counterfactual")
 def generate_counterfactual(
@@ -391,7 +370,6 @@ def generate_counterfactual(
             status_code=400,
             detail=str(e)
         )
-
 
 @app.post("/what-if")
 def simulate_what_if(
@@ -446,7 +424,6 @@ def get_failure_profiles(domain: str):
             status_code=400,
             detail=str(e)
         )
-
 
 @app.post("/profiles/{domain}/identify")
 def identify_failure_profile(

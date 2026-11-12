@@ -2210,149 +2210,174 @@ After the audit, implement the refactoring incrementally in the order defined ab
 
 **Baseline rule:** Preserve the current authenticated four-domain platform as the starting point. Do not restart from the original coding stage or replace the existing application with a new implementation.
 
-# Second Code Optimization Stage
+# Stage 4: Complete Code Simplification and Optimization
 
-I am continuing my AI Failure Intelligence Platform code optimization project.
+Continue my project from the **Stage 3 Optimized ZIP**. Treat all previously completed Stage 2 and Stage 3 changes as part of the existing project. Do not redo or overwrite them unnecessarily.
 
-## Project Objective
+## 1. Previously Completed Work – Preserve Everything
 
-Further reduce and simplify the existing project codebase without changing its functionality.
+### Stage 2 – Backend and Core Optimization
 
-This is a code optimization task, NOT a redesign, rewrite, or production deployment task.
+The following optimizations have already been completed:
 
-I am not going to manually implement your suggested changes. You must make the changes directly to the project files and provide me with a complete, ready-to-use optimized project ZIP.
+| File | Original lines | Stage 2 lines |
+|---|---:|---:|
+| `frontend/src/App.jsx` | 1,230 | 1,221 |
+| `backend/analytics/failure_profiles.py` | 1,056 | 423 |
+| `backend/counterfactual/generator.py` | 797 | 271 |
+| `backend/api.py` | 469 | 446 |
+| `backend/ml/counterfactual_engine.py` | 470 | 313 |
+| `backend/recommendation/recommender.py` | 300 | 144 |
 
-## Previous Optimization Stage
+- 1,504 lines removed from these six files.
+- Added `frontend/src/lib/api.js` (21 lines) to provide the missing API helper module.
+- No application source files deleted.
+- All 20 previously verified ML artifacts were preserved with matching SHA-256 hashes.
+- Backend smoke tests and several functional tests were reported as passing.
 
-In the previous stage:
+### Stage 3 – Additional Simplification
 
-- 2 files were modified.
-- 2 files were deleted.
-- 2 files were added.
-- 2,113 lines were removed, mainly by separating an unused standalone model-comparison training script.
-- All four production ML domain models were preserved.
-- Model artifacts were preserved.
-- Backend smoke tests passed.
+The following changes have already been completed:
 
-The previous optimization was not sufficient. I want further reductions in the actual application code.
+| File | Stage 2 lines | Stage 3 lines |
+|---|---:|---:|
+| `candidate_sampler.py` | 325 | 108 |
+| `profile_guidance.py` | 278 | 88 |
+| `rules.py` | 202 | 80 |
+| `auth.py` | 278 | 279 |
 
-## Main Target
+- Three files were significantly simplified.
+- `auth.py` received a small modification.
+- No files were added or deleted.
+- 528 fewer project-wide lines were reported.
+- Stage 2 project-wide count: 7,526 lines.
+- Stage 3 project-wide count: 6,998 lines.
+- All 20 previously verified ML artifacts were reported unchanged.
+- Backend, API, authentication, database, domain, recommendation, counterfactual, and other regression tests were reported as passing.
+- Frontend build, ESLint, and browser-based chart testing remained untested because frontend dependencies were unavailable.
 
-Aim to remove another 1,000–2,000 lines of unnecessary or repetitive active application code, provided this can be achieved safely.
+**Important:** These are previously reported results. Independently verify the actual Stage 3 ZIP before relying on them. Do not assume a test passed without rerunning it.
 
-Do not force the target by deleting necessary functionality or making code unreadable.
+## 2. Stage 4 – Main Objective
 
-## Priority Files to Audit and Optimize
+I want the entire application codebase to become:
 
-1. frontend/src/App.jsx – approximately 1,230 lines.
-2. backend/analytics/failure_profiles.py – approximately 1,056 lines.
-3. backend/counterfactual/generator.py – approximately 797 lines.
-4. backend/api.py – approximately 469 lines.
-5. backend/ml/counterfactual_engine.py – approximately 470 lines.
-6. backend/recommendation/recommender.py – approximately 300 lines.
+- As short and simple as reasonably possible.
+- Clean, readable, and beginner-friendly.
+- Free of unnecessary duplicate functions and repetitive code.
+- Easy to maintain and understand.
+- Efficient without sacrificing functionality.
 
-First inspect the actual files and their current line counts. These figures are from the previous audit and may have changed.
+Review the complete frontend and backend, not just the files optimized previously.
 
-## Required Optimization
+## 3. Find and Remove Repetition
 
-1. Identify duplicate and repetitive code.
-2. Simplify unnecessarily lengthy functions.
-3. Consolidate repeated calculations and processing.
-4. Simplify React components and repeated JSX.
-5. Reduce unnecessary state and event-handling logic.
-6. Reuse common backend functions where appropriate.
-7. Simplify recommendation logic without changing its outputs.
-8. Simplify analytics and counterfactual logic without changing results.
-9. Remove only code confirmed to be unused.
-10. Keep the code beginner-friendly and straightforward.
+Inspect every application source file for:
 
-Do not introduce complicated abstractions, unnecessary design patterns, or excessive helper files merely to reduce line counts.
+- Duplicate functions and implementations.
+- Repeated API request logic.
+- Repeated validation and error-handling logic.
+- Duplicate frontend components and UI logic.
+- Unnecessary conditions and loops.
+- Unused variables, imports, and functions.
+- Redundant files and obsolete code.
+- Unnecessary complexity and overly long functions.
 
-## Strict Functionality Preservation
+Consolidate genuinely shared logic into reusable utilities or components.
 
-All of the following must continue working:
+Do not introduce excessive abstractions, unnecessary file splitting, or complicated one-liners.
 
-- Authentication and registration.
-- Student analysis.
-- Software analysis.
-- Jobs analysis.
-- Projects analysis.
-- Dashboard analytics.
-- All existing charts and visualizations.
-- Analysis history.
+## 4. Preserve All Existing Functionality
+
+Do not break, remove, or redesign existing features.
+
+Preserve:
+
+- Registration, login, and authentication.
+- Student, Software, Jobs, and Projects domain analyses.
+- All four production ML models and their artifacts.
+- Dashboard analytics and charts.
+- History and database persistence.
 - Recommendations.
 - Counterfactual generation.
-- What-If simulation.
-- Database persistence.
-- Multiple-user data isolation.
-- Existing API endpoints and response formats.
+- What-If analysis.
+- Multi-user isolation.
+- All existing API endpoints and response contracts.
+- Database schema.
+- Model architecture, preprocessing, standardization, prediction, clustering, and evaluation behavior.
 
-## Machine Learning Preservation
+Do not unnecessarily retrain models or modify ML artifacts.
 
-- Preserve all four domain-specific production models.
-- Preserve preprocessing and standardization.
-- Preserve prediction compatibility.
-- Preserve clustering and evaluation.
-- Preserve existing model architectures.
-- Do not retrain models unnecessarily.
-- Do not delete archived models without verifying dependencies.
+## 5. Frontend and Backend Optimization
 
-## Important Development Rules
+Optimize the entire codebase.
 
-1. Do not rewrite working code unnecessarily.
-2. Do not change the database schema.
-3. Do not change API contracts.
-4. Do not remove existing features.
-5. Do not change the UI design or chart behavior.
-6. Do not compress code into unreadable one-line implementations.
-7. Do not delete files without checking imports and references.
-8. Do not claim tests passed unless they were actually executed.
-9. Compare the original project with the newly optimized version.
-10. Perform the actual modifications yourself. Do not give me code snippets and ask me to copy and paste them.
+For the frontend:
+- Simplify `App.jsx` and other components.
+- Remove duplicated UI and API logic.
+- Reuse common components and utilities.
+- Preserve existing appearance, navigation, charts, and interactions.
 
-## Testing Requirements
+For the backend:
+- Simplify repeated business logic.
+- Consolidate reusable functions.
+- Preserve domain-specific behavior.
+- Maintain API compatibility and database operations.
 
-Run:
+## 6. Testing and Validation
 
-- Python compilation checks.
-- Backend smoke tests.
-- Authentication and registration tests.
-- All four domain analysis tests.
-- Recommendation tests.
-- Counterfactual tests.
-- What-If simulation tests.
-- Database persistence tests.
-- Multiple-user isolation tests.
-- Frontend import checks.
-- Frontend lint checks.
-- Frontend production build.
-- Existing chart and visualization compatibility checks where possible.
+Run and report the results of:
 
-Clearly distinguish passed, failed, and untested functionality.
+1. Python compilation.
+2. Frontend syntax and import checks.
+3. Frontend build and lint, where dependencies permit.
+4. Authentication and registration.
+5. All four domain analyses.
+6. Dashboard analytics and charts.
+7. Recommendations.
+8. Counterfactual generation.
+9. What-If analysis.
+10. History and database persistence.
+11. Multi-user isolation.
+12. API compatibility.
+13. ML artifact integrity.
+14. Complete ZIP integrity and extraction.
 
-## Final Deliverables
+Clearly identify passed, failed, and untested checks. Never claim success without actual execution.
 
-Provide:
+## 7. Final Code Reduction Report
 
-1. Complete optimized project ZIP.
-2. Modified files list.
-3. Added files list.
-4. Deleted files list.
-5. Explanation of what was simplified in each modified file.
-6. Original versus optimized line-count comparison.
-7. Total lines removed from the active application.
-8. Test results.
-9. Confirmation that all four ML models and model artifacts are preserved.
-10. A concise optimization report.
+Use consistent counting rules and provide:
 
-## Final Success Criteria
+- Original project line count.
+- Stage 2 project line count.
+- Stage 3 project line count.
+- Stage 4 final project line count.
+- Total reduction from the original project.
+- Additional reduction achieved in Stage 4.
+- Modified, added, and deleted files.
+- Important simplifications.
+- Test results.
+- Confirmation of whether all 20 ML artifacts remain unchanged.
 
-The result should be:
+Do not count documentation, datasets, binaries, caches, generated files, or dependency lockfiles as application source code. Explain the counting method.
 
-- Noticeably shorter than the previous optimized version.
-- Easier to understand and maintain.
-- Beginner-friendly.
-- Fully compatible with the existing application.
-- Complete and ready for me to extract and use.
+## 8. Final Deliverable
 
-**Remember: I only want to download the finished project ZIP. I do not want to manually implement your changes. Start by inspecting the uploaded project, then perform the optimization directly.**
+Provide one complete Stage 4 optimized ZIP containing the entire application.
+
+The ZIP must include all necessary source files, configuration files, and project dependencies metadata. Do not provide only snippets or partial folders.
+
+## Strict Instructions
+
+- Start from the actual Stage 3 ZIP.
+- Preserve all previously completed Stage 2 and Stage 3 changes.
+- Do not repeat completed work unnecessarily.
+- Do not sacrifice functionality to reduce line count.
+- Do not delete files without checking references.
+- Do not modify ML artifacts unnecessarily.
+- Do not make unnecessary architectural changes.
+- Do not hide failed or untested checks.
+- Actually modify the project files and verify the final ZIP.
+
+**Final goal: One complete, functional application with the simplest, shortest practical, cleanest codebase and no unnecessary repetitive functions or code.**

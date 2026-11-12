@@ -31,233 +31,87 @@ from backend.counterfactual.candidate_sampler import (
     CandidateSampler
 )
 
-
 class CounterfactualGenerator:
 
     def __init__(self, model_dir="models"):
-
-        self.manager = DomainModelManager(
-            model_dir
-        )
-
-        self.constraints = (
-            DomainConstraintEngine()
-        )
-
+        self.manager = DomainModelManager(model_dir)
+        self.constraints = DomainConstraintEngine()
         self.sampler = CandidateSampler()
+        self.profile_analyzer = FailureProfileAnalyzer(n_clusters=3)
+        self.profile_guidance = ProfileGuidanceEngine()
 
-        self.profile_analyzer = (
-            FailureProfileAnalyzer(
-                n_clusters=3
-            )
-        )
 
-        self.profile_guidance = (
-            ProfileGuidanceEngine()
-        )
-
-    # =========================================================
     # Prediction
-    # =========================================================
 
     def predict(self, data):
-
         domain = data.get("Domain")
-
-        result = self.manager.predict(
-            domain,
-            data
-        )
-
+        result = self.manager.predict(domain, data)
         return {
-            "domain":
-                domain,
-
-            "failure_type":
-                result["failure_type"],
-
-            "probability":
-                result["probability"],
-
-            "class_probabilities":
-                result.get(
-                    "class_probabilities",
-                    {}
-                )
+            "domain": domain,
+            "failure_type": result["failure_type"],
+            "probability": result["probability"],
+            "class_probabilities": result.get("class_probabilities", {}),
         }
 
-    # =========================================================
+
     # Candidate generation
-    # =========================================================
 
-    def _make_candidates(
-        self,
-        data,
-        domain,
-        prioritized_features=None
-    ):
-
+    def _make_candidates(self, data, domain, prioritized_features=None):
+        features = prioritized_features or self.constraints.actionable_features(domain)
         candidates = []
-
-        actionable_features = (
-            prioritized_features
-            if prioritized_features
-            else self.constraints.actionable_features(domain)
-        )
-
-        for feature in actionable_features:
-
-            current_value = data.get(
-                feature
-            )
-
-            if current_value is None:
+        for feature in features:
+            current = data.get(feature)
+            if current is None:
                 continue
-
-            candidate_values = (
-                self.sampler.get_candidates(
-                    domain,
-                    feature,
-                    current_value
-                )
-            )
-
-            for new_value in candidate_values:
-
-                if new_value == current_value:
+            for value in self.sampler.get_candidates(domain, feature, current):
+                if value == current:
                     continue
-
-                # -------------------------------------------------
-                # Apply domain constraint validation
-                # -------------------------------------------------
-
-                valid, reason = (
-                    self.constraints.validate_change(
-                        domain,
-                        feature,
-                        new_value
-                    )
-                )
-
-                if not valid:
-                    continue
-
-                candidates.append({
-                    "feature":
-                        feature,
-
-                    "old_value":
-                        current_value,
-
-                    "new_value":
-                        new_value,
-
-                    "changes": {
-                        feature:
-                            new_value
-                    }
-                })
-
+                valid, _ = self.constraints.validate_change(domain, feature, value)
+                if valid:
+                    candidates.append({
+                        "feature": feature,
+                        "old_value": current,
+                        "new_value": value,
+                        "changes": {feature: value},
+                    })
         return candidates
 
-    # =========================================================
     # Generate counterfactual analysis
-    # =========================================================
 
     def generate(
         self,
         data,
         desired_prediction=None,
         profile_guided=True,
-        max_guided_features=2
+        max_guided_features=2,
     ):
-
-        # -----------------------------------------------------
-        # Original prediction
-        # -----------------------------------------------------
-
-        original = self.predict(
-            data
+        original = self.predict(data)
+        domain = self.manager.normalize_domain(data.get("Domain"))
+        profile_result = self.profile_analyzer.predict_profile(domain, data)
+        assigned_profile = profile_result.get("profile")
+        profile_guidance = (
+            self.profile_guidance.generate_guidance(domain, data, assigned_profile)
+            if assigned_profile else None
         )
 
-        domain = (
-            self.manager.normalize_domain(
-                data.get("Domain")
-            )
-        )
-
-        # ---------------------------------------------------------
-        # Identify historical failure profile
-        # ---------------------------------------------------------
-
-        profile_result = (
-            self.profile_analyzer.predict_profile(
-                domain,
-                data
-            )
-        )
-
-        assigned_profile = (
-            profile_result.get(
-                "profile"
-            )
-        )
-
-        profile_guidance = None
-
-        if assigned_profile:
-
-            profile_guidance = (
-                self.profile_guidance.generate_guidance(
-                    domain,
-                    data,
-                    assigned_profile
-                )
-            )
-
-        original_prediction = (
-            original["failure_type"]
-        )
-
-        original_probability = (
-            original["probability"]
-        )
-
-        original_probabilities = (
-            original.get(
-                "class_probabilities",
-                {}
-            )
-        )
-
-        # -----------------------------------------------------
-        # Determine desired prediction
-        # -----------------------------------------------------
-
-        # Failure-prevention defaults are domain-specific. We do not
-        # choose the most probable alternative because that can select
-        # another undesirable outcome (for example Cancelled instead
-        # of Completed in Projects).
+        original_prediction = original["failure_type"]
+        original_probability = original["probability"]
+        original_probabilities = original.get("class_probabilities", {})
         desired_defaults = {
             "Student": "Passed",
             "Software": "FIXED",
             "Jobs": "Selected",
             "Projects": "Completed",
         }
-
         if desired_prediction is None:
             desired_prediction = desired_defaults.get(domain)
 
         if desired_prediction not in original_probabilities:
             raise ValueError(
                 f"Desired prediction '{desired_prediction}' is not a valid "
-                f"class for {domain}. Available classes: "
-                f"{list(original_probabilities)}"
+                f"class for {domain}. Available classes: {list(original_probabilities)}"
             )
 
-        # No intervention is needed when the case already has the
-        # desired outcome. This prevents an unchanged prediction from
-        # being counted as a successful counterfactual.
         if original_prediction == desired_prediction:
             return {
                 "original_input": data,
@@ -295,503 +149,123 @@ class CounterfactualGenerator:
                 ),
             }
 
-        # -----------------------------------------------------
-        # Profile-guided feature prioritization
-        # -----------------------------------------------------
-
         prioritized_features = None
         if profile_guided and assigned_profile:
             prioritized_features = self.profile_guidance.prioritized_feature_set(
-                domain,
-                data,
-                assigned_profile,
-                max_features=max_guided_features
+                domain, data, assigned_profile, max_features=max_guided_features
             )
 
-        # -----------------------------------------------------
-        # Generate candidates
-        # -----------------------------------------------------
-
-        candidates = self._make_candidates(
-            data,
-            domain,
-            prioritized_features=prioritized_features
-        )
-
-        feasible_candidates = []
-        rejected_candidates = []
-
-        # -----------------------------------------------------
-        # Feasibility filtering
-        # -----------------------------------------------------
-
+        candidates = self._make_candidates(data, domain, prioritized_features)
+        feasible, rejected = [], []
         for candidate in candidates:
-
-            valid, reasons = (
-                self.constraints.filter_changes(
-                    domain,
-                    candidate["changes"]
-                )
+            valid, reasons = self.constraints.filter_changes(domain, candidate["changes"])
+            (feasible if valid else rejected).append(
+                candidate if valid else {**candidate, "reasons": reasons}
             )
-
-            if valid:
-
-                feasible_candidates.append(
-                    candidate
-                )
-
-            else:
-
-                rejected_candidates.append({
-                    **candidate,
-                    "reasons": reasons
-                })
-
-        # -----------------------------------------------------
-        # Evaluate every feasible candidate
-        # -----------------------------------------------------
 
         scenarios = []
-
-        for candidate in feasible_candidates:
-
-            new_data = dict(data)
-
-            new_data.update(
-                candidate["changes"]
+        for candidate in feasible:
+            changed_data = {**data, **candidate["changes"]}
+            result = self.predict(changed_data)
+            new_prediction = result["failure_type"]
+            new_probability = result.get("class_probabilities", {}).get(
+                original_prediction, 0.0
             )
-
-            result = self.predict(
-                new_data
-            )
-
-            new_prediction = (
-                result["failure_type"]
-            )
-
-            new_probabilities = (
-                result.get(
-                    "class_probabilities",
-                    {}
-                )
-            )
-
-            # -------------------------------------------------
-            # Probability of original predicted class
-            # -------------------------------------------------
-
-            new_original_class_probability = (
-                new_probabilities.get(
-                    original_prediction,
-                    0.0
-                )
-            )
-
-            # -------------------------------------------------
-            # Model-predicted risk reduction
-            # -------------------------------------------------
-
-            risk_reduction = (
-                original_probability
-                - new_original_class_probability
-            )
-
-            # -------------------------------------------------
-            # Prediction transition
-            # -------------------------------------------------
-
-            prediction_transition = (
-                new_prediction
-                != original_prediction
-            )
-
-            # -------------------------------------------------
-            # Desired-class transition
-            # -------------------------------------------------
-
-            successful = (
-                desired_prediction is not None
-                and new_prediction
-                == desired_prediction
-            )
-
-            # -------------------------------------------------
-            # Beneficial intervention
-            #
-            # Positive risk reduction means the model predicts
-            # a lower probability for the original predicted
-            # class.
-            # -------------------------------------------------
-
-            beneficial = (
-                risk_reduction > 0.000001
-            )
-
+            reduction = original_probability - new_probability
+            successful = new_prediction == desired_prediction
             scenarios.append({
-
-                "feature":
-                    candidate["feature"],
-
-                "old_value":
-                    candidate["old_value"],
-
-                "new_value":
-                    candidate["new_value"],
-
-                "changes":
-                    candidate["changes"],
-
-                "prediction":
-                    new_prediction,
-
-                "probability":
-                    result["probability"],
-
-                "class_probabilities":
-                    new_probabilities,
-
-                "original_class_probability":
-                    round(
-                        original_probability,
-                        6
-                    ),
-
-                "new_original_class_probability":
-                    round(
-                        new_original_class_probability,
-                        6
-                    ),
-
-                "risk_reduction":
-                    round(
-                        risk_reduction,
-                        6
-                    ),
-
-                "risk_reduction_percentage_points":
-                    round(
-                        risk_reduction * 100,
-                        4
-                    ),
-
-                "prediction_transition":
-                    prediction_transition,
-
-                "successful":
-                    successful,
-
-                "beneficial":
-                    beneficial
+                "feature": candidate["feature"],
+                "old_value": candidate["old_value"],
+                "new_value": candidate["new_value"],
+                "changes": candidate["changes"],
+                "prediction": new_prediction,
+                "probability": result["probability"],
+                "class_probabilities": result.get("class_probabilities", {}),
+                "original_class_probability": round(original_probability, 6),
+                "new_original_class_probability": round(new_probability, 6),
+                "risk_reduction": round(reduction, 6),
+                "risk_reduction_percentage_points": round(reduction * 100, 4),
+                "prediction_transition": new_prediction != original_prediction,
+                "successful": successful,
+                "beneficial": reduction > 0.000001,
             })
 
-        # =====================================================
-        # Separate result categories
-        # =====================================================
-
-        # Successful counterfactual:
-        # original class changes to desired class.
-        successful_counterfactuals = [
-            item
-            for item in scenarios
-            if item["successful"]
+        successful = [item for item in scenarios if item["successful"]]
+        risk_only = [
+            item for item in scenarios
+            if item["beneficial"] and not item["successful"]
         ]
-
-        # Beneficial but unsuccessful:
-        # risk decreases but prediction does not change
-        # to the desired class.
-        risk_reduction_only = [
-            item
-            for item in scenarios
-            if (
-                item["beneficial"]
-                and not item["successful"]
-            )
-        ]
-
-        # Neutral or harmful:
-        # no reduction or increased original-class risk.
-        non_beneficial = [
-            item
-            for item in scenarios
-            if not item["beneficial"]
-        ]
-
-        # =====================================================
-        # Ranking
-        # =====================================================
-
-        ranked_scenarios = sorted(
+        non_beneficial = [item for item in scenarios if not item["beneficial"]]
+        ranked = sorted(
             scenarios,
-            key=lambda item: (
-                item["risk_reduction"],
-                item["prediction_transition"]
-            ),
-            reverse=True
+            key=lambda item: (item["risk_reduction"], item["prediction_transition"]),
+            reverse=True,
         )
-
         ranked_successful = sorted(
-            successful_counterfactuals,
-            key=lambda item: (
-                item["risk_reduction"]
-            ),
-            reverse=True
+            successful, key=lambda item: item["risk_reduction"], reverse=True
         )
-
-        ranked_risk_reduction_only = sorted(
-            risk_reduction_only,
-            key=lambda item: (
-                item["risk_reduction"]
-            ),
-            reverse=True
+        ranked_risk_only = sorted(
+            risk_only, key=lambda item: item["risk_reduction"], reverse=True
         )
+        best_successful = ranked_successful[0] if ranked_successful else None
+        best_risk_only = ranked_risk_only[0] if ranked_risk_only else None
+        best_intervention = ranked[0] if ranked else None
 
-        # =====================================================
-        # Best successful counterfactual
-        # =====================================================
-
-        best_successful = None
-
-        if ranked_successful:
-
-            best_successful = (
-                ranked_successful[0]
+        if best_successful:
+            status = "successful_counterfactual_found"
+            message = (
+                "A feasible counterfactual intervention was identified that "
+                "changes the model prediction to the desired outcome."
             )
-
-        # =====================================================
-        # Best risk-reduction-only intervention
-        # =====================================================
-
-        best_risk_reduction_only = None
-
-        if ranked_risk_reduction_only:
-
-            best_risk_reduction_only = (
-                ranked_risk_reduction_only[0]
+        elif best_risk_only:
+            status = "risk_reduction_without_transition"
+            message = (
+                "A feasible intervention was identified that reduces the "
+                "model-predicted risk, but the predicted outcome does not change."
             )
-
-        # =====================================================
-        # Best overall intervention
-        # =====================================================
-
-        best_intervention = None
-
-        if ranked_scenarios:
-
-            best_intervention = (
-                ranked_scenarios[0]
-            )
-
-        # =====================================================
-        # Determine overall status
-        # =====================================================
-
-        if best_successful is not None:
-
-            analysis_status = (
-                "successful_counterfactual_found"
-            )
-
-            analysis_message = (
-                "A feasible counterfactual "
-                "intervention was identified that "
-                "changes the model prediction to "
-                "the desired outcome."
-            )
-
-        elif best_risk_reduction_only is not None:
-
-            analysis_status = (
-                "risk_reduction_without_transition"
-            )
-
-            analysis_message = (
-                "A feasible intervention was "
-                "identified that reduces the "
-                "model-predicted risk, but the "
-                "predicted outcome does not change."
-            )
-
         else:
-
-            analysis_status = (
-                "no_beneficial_intervention_found"
+            status = "no_beneficial_intervention_found"
+            message = (
+                "No feasible intervention produced a positive reduction in "
+                "the model-predicted risk."
             )
 
-            analysis_message = (
-                "No feasible intervention produced "
-                "a positive reduction in the "
-                "model-predicted risk."
-            )
-
-        # =====================================================
-        # Recommended changes
-        # =====================================================
-
-        recommended_changes = {}
-
-        if best_successful is not None:
-
-            recommended_changes = (
-                best_successful["changes"]
-            )
-
-        elif best_risk_reduction_only is not None:
-
-            recommended_changes = (
-                best_risk_reduction_only["changes"]
-            )
-
-        # =====================================================
-        # Final result
-        # =====================================================
+        recommended = (
+            best_successful or best_risk_only or {}
+        ).get("changes", {})
 
         return {
-
-            # -------------------------------------------------
-            # Input
-            # -------------------------------------------------
-
-            "original_input":
-                data,
-
-            # -------------------------------------------------
-            # Original prediction
-            # -------------------------------------------------
-
-            "original_prediction":
-                original,
-
-            # -------------------------------------------------
-            # Desired prediction
-            # -------------------------------------------------
-
-            "desired_prediction":
-                desired_prediction,
-
-            # -------------------------------------------------
-            # Candidate statistics
-            # -------------------------------------------------
-
-            "candidate_count":
-                len(candidates),
-
-            "feasible_candidate_count":
-                len(feasible_candidates),
-
-            "rejected_candidate_count":
-                len(rejected_candidates),
-
-            # -------------------------------------------------
-            # Result classification
-            # -------------------------------------------------
-
-            "analysis_status":
-                analysis_status,
-
-            "analysis_message":
-                analysis_message,
-
-            # -------------------------------------------------
-            # All scenarios
-            # -------------------------------------------------
-
-            "counterfactuals":
-                ranked_scenarios,
-
-            # -------------------------------------------------
-            # Successful counterfactuals
-            # -------------------------------------------------
-
-            "successful_counterfactuals":
-                ranked_successful,
-
-            "successful_counterfactual_count":
-                len(
-                    ranked_successful
-                ),
-
-            "best_successful_counterfactual":
-                best_successful,
-
-            # -------------------------------------------------
-            # Risk-reduction-only interventions
-            # -------------------------------------------------
-
-            "risk_reduction_only":
-                ranked_risk_reduction_only,
-
-            "risk_reduction_only_count":
-                len(
-                    ranked_risk_reduction_only
-                ),
-
-            "best_risk_reduction_only":
-                best_risk_reduction_only,
-
-            # -------------------------------------------------
-            # Non-beneficial interventions
-            # -------------------------------------------------
-
-            "non_beneficial_count":
-                len(
-                    non_beneficial
-                ),
-
-            # -------------------------------------------------
-            # Best overall
-            # -------------------------------------------------
-
-            "best_intervention":
-                best_intervention,
-
-            # -------------------------------------------------
-            # Recommended change
-            # -------------------------------------------------
-
-            "recommended_changes":
-                recommended_changes,
-
-            # -------------------------------------------------
-            # Backward compatibility
-            # -------------------------------------------------
-
-            "minimum_effective_change":
-                best_successful,
-
-            "highest_risk_reduction":
-                best_intervention,
-
-            # -------------------------------------------------
-            # Rejected candidates
-            # -------------------------------------------------
-
-            "rejected_candidates":
-                rejected_candidates,
-
+            "original_input": data,
+            "original_prediction": original,
+            "desired_prediction": desired_prediction,
+            "candidate_count": len(candidates),
+            "feasible_candidate_count": len(feasible),
+            "rejected_candidate_count": len(rejected),
+            "analysis_status": status,
+            "analysis_message": message,
+            "counterfactuals": ranked,
+            "successful_counterfactuals": ranked_successful,
+            "successful_counterfactual_count": len(ranked_successful),
+            "best_successful_counterfactual": best_successful,
+            "risk_reduction_only": ranked_risk_only,
+            "risk_reduction_only_count": len(ranked_risk_only),
+            "best_risk_reduction_only": best_risk_only,
+            "non_beneficial_count": len(non_beneficial),
+            "best_intervention": best_intervention,
+            "recommended_changes": recommended,
+            "minimum_effective_change": best_successful,
+            "highest_risk_reduction": best_intervention,
+            "rejected_candidates": rejected,
             "profile_analysis": profile_result,
-
             "profile_guidance": profile_guidance,
-
             "profile_guided": bool(profile_guided),
-
             "profile_guided_feature_limit": max_guided_features,
-
             "prioritized_features_used": prioritized_features or [],
-
-            # -------------------------------------------------
-            # Interpretation
-            # -------------------------------------------------
-
-            "interpretation":
-                (
-                    "Counterfactual results represent "
-                    "model-based scenario analysis. "
-                    "A positive predicted risk reduction "
-                    "does not establish a causal effect "
-                    "or guarantee real-world failure "
-                    "prevention. A successful counterfactual "
-                    "means that the tested input change "
-                    "caused the trained model's predicted "
-                    "class to change to the desired class."
-                )
+            "interpretation": (
+                "Counterfactual results represent model-based scenario analysis. "
+                "A positive predicted risk reduction does not establish a causal "
+                "effect or guarantee real-world failure prevention. A successful "
+                "counterfactual means that the tested input change caused the "
+                "trained model's predicted class to change to the desired class."
+            ),
         }

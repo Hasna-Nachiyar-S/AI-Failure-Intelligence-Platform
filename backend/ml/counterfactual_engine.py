@@ -3,7 +3,6 @@ from typing import Any, Dict, List, Optional
 
 import pandas as pd
 
-
 @dataclass
 class Intervention:
     feature: str
@@ -15,14 +14,12 @@ class Intervention:
     prediction_before: Any
     prediction_after: Any
 
-
 @dataclass
 class CounterfactualResult:
     original_prediction: Any
     original_failure_risk: float
     recommended_interventions: List[Dict[str, Any]]
     best_intervention: Optional[Dict[str, Any]]
-
 
 class CounterfactualEngine:
     """
@@ -89,9 +86,7 @@ class CounterfactualEngine:
         self.domain = domain
         self.config = self.DOMAIN_CONFIG[domain]
 
-    # =========================================================
     # MODEL INPUT PREPARATION
-    # =========================================================
 
     def _prepare_input(
         self,
@@ -107,9 +102,7 @@ class CounterfactualEngine:
 
         return pd.DataFrame([data])
 
-    # =========================================================
     # PREDICTION
-    # =========================================================
 
     def _prediction(
         self,
@@ -140,9 +133,7 @@ class CounterfactualEngine:
             class_probabilities
         )
 
-    # =========================================================
     # FAILURE RISK
-    # =========================================================
 
     def _failure_risk(
         self,
@@ -163,181 +154,47 @@ class CounterfactualEngine:
 
         return 1.0 - desired_probability
 
-    # =========================================================
     # CANDIDATE VALUES
-    # =========================================================
 
     @staticmethod
-    def _candidate_values(
-        value: Any,
-        feature: str
-    ) -> List[Any]:
-
+    @staticmethod
+    def _candidate_values(value: Any, feature: str) -> List[Any]:
         if value is None:
             return []
 
-        # -----------------------------------------------------
-        # STUDENT
-        # -----------------------------------------------------
+        fixed_values = {
+            "absences": [0, 2, 5, 10],
+            "studytime": [1, 2, 3, 4],
+            "skills_match_score": [50, 60, 70, 80, 90, 95, 100],
+            "github_activity": [50, 60, 70, 80, 90, 100],
+            "Completion": [20, 30, 40, 50, 60, 70, 80, 90, 100],
+        }
+        if feature in fixed_values:
+            return fixed_values[feature]
 
-        if feature == "absences":
-            return [
-                0,
-                2,
-                5,
-                10,
-            ]
-
-        if feature == "studytime":
-            return [
-                1,
-                2,
-                3,
-                4,
-            ]
-
-        # -----------------------------------------------------
-        # JOBS
-        # -----------------------------------------------------
-
-        if feature == "skills_match_score":
-            return [
-                50,
-                60,
-                70,
-                80,
-                90,
-                95,
-                100,
-            ]
+        try:
+            current = float(value)
+        except (TypeError, ValueError):
+            return []
 
         if feature == "project_count":
-            try:
-                current = float(value)
-
-                return [
-                    current + 1,
-                    current + 2,
-                    current + 3,
-                ]
-
-            except (TypeError, ValueError):
-                return []
-
+            return [current + offset for offset in (1, 2, 3)]
         if feature == "resume_length":
-            try:
-                current = float(value)
-
-                return [
-                    current + 50,
-                    current + 100,
-                    current + 200,
-                ]
-
-            except (TypeError, ValueError):
-                return []
-
-        if feature == "github_activity":
-            return [
-                50,
-                60,
-                70,
-                80,
-                90,
-                100,
-            ]
-
-        # -----------------------------------------------------
-        # SOFTWARE
-        # -----------------------------------------------------
-
-        if feature in {
-            "pr",
-            "cl",
-            "rp",
-            "os",
-            "bs",
-            "bsr",
-        }:
-
-            try:
-                current = float(value)
-
-                return [
-                    current - 1,
-                    current,
-                    current + 1,
-                    current + 2,
-                ]
-
-            except (TypeError, ValueError):
-                return []
-
-        # -----------------------------------------------------
-        # PROJECTS
-        # -----------------------------------------------------
-
-        if feature == "Project_Cost":
-
-            try:
-                current = float(value)
-
-                return [
-                    current * 0.8,
-                    current * 0.9,
-                    current * 1.1,
-                    current * 1.2,
-                ]
-
-            except (TypeError, ValueError):
-                return []
-
-        if feature == "Project_Benefit":
-
-            try:
-                current = float(value)
-
-                return [
-                    current * 0.8,
-                    current * 0.9,
-                    current * 1.1,
-                    current * 1.2,
-                ]
-
-            except (TypeError, ValueError):
-                return []
-
-        if feature == "Completion":
-            return [
-                20,
-                30,
-                40,
-                50,
-                60,
-                70,
-                80,
-                90,
-                100,
-            ]
-
-        # No candidate generation for categorical features
-        # until domain-specific categorical constraints
-        # are implemented.
-
+            return [current + offset for offset in (50, 100, 200)]
+        if feature in {"pr", "cl", "rp", "os", "bs", "bsr"}:
+            return [current + offset for offset in (-1, 0, 1, 2)]
+        if feature in {"Project_Cost", "Project_Benefit"}:
+            return [current * factor for factor in (0.8, 0.9, 1.1, 1.2)]
         return []
 
-    # =========================================================
     # GENERATE COUNTERFACTUALS
-    # =========================================================
 
     def generate(
         self,
         data: Dict[str, Any]
     ) -> CounterfactualResult:
 
-        # -----------------------------------------------------
         # ORIGINAL PREDICTION
-        # -----------------------------------------------------
 
         (
             original_prediction,
@@ -350,9 +207,7 @@ class CounterfactualEngine:
 
         interventions = []
 
-        # -----------------------------------------------------
         # ACTIONABLE FEATURES
-        # -----------------------------------------------------
 
         for feature in self.config[
             "actionable_features"
@@ -377,9 +232,7 @@ class CounterfactualEngine:
 
                 candidate_data[feature] = new_value
 
-                # -------------------------------------------------
                 # COUNTERFACTUAL PREDICTION
-                # -------------------------------------------------
 
                 try:
 
@@ -393,9 +246,7 @@ class CounterfactualEngine:
                 except Exception:
                     continue
 
-                # -------------------------------------------------
                 # RISK CALCULATION
-                # -------------------------------------------------
 
                 candidate_risk = self._failure_risk(
                     candidate_probabilities
@@ -406,9 +257,7 @@ class CounterfactualEngine:
                     - candidate_risk
                 )
 
-                # -------------------------------------------------
                 # STORE INTERVENTION
-                # -------------------------------------------------
 
                 interventions.append(
                     asdict(
@@ -429,9 +278,7 @@ class CounterfactualEngine:
                     )
                 )
 
-        # -----------------------------------------------------
         # RANK INTERVENTIONS
-        # -----------------------------------------------------
 
         interventions.sort(
             key=lambda item: item[
@@ -440,9 +287,7 @@ class CounterfactualEngine:
             reverse=True,
         )
 
-        # -----------------------------------------------------
         # BEST INTERVENTION
-        # -----------------------------------------------------
 
         best_intervention = (
             interventions[0]
@@ -450,9 +295,7 @@ class CounterfactualEngine:
             else None
         )
 
-        # -----------------------------------------------------
         # RETURN RESULT
-        # -----------------------------------------------------
 
         return CounterfactualResult(
             original_prediction=(
